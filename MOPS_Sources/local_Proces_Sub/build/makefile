@@ -19,19 +19,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Local_Proces
+all: Local_Proces_Sub
 
 # Tool invocations
-Local_Proces: $(OBJS) $(USER_OBJS)
+Local_Proces_Sub: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L/usr/xenomai/lib -o "Local_Proces" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/usr/xenomai/lib -o "Local_Proces_Sub" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces_Sub
 	-@echo ' '
 
 .PHONY: all clean dependents

@@ -1,12 +1,12 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../proces.c 
+../proces_pub.c
 
 OBJS += \
-./proces.o 
+./proces_pub.o
 
 C_DEPS += \
-./proces.d 
+./proces_pub.d
 
 
 # Each subdirectory must supply rules for building sources it contributes

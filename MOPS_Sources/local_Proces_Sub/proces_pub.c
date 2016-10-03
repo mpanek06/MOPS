@@ -6,12 +6,6 @@
 
 #include "MOPS.h"
 
-#define SEN 1
-#define REC 2
-#define TYPE REC   //1 - sender, 2 - receiver
-
-
-#if TYPE == REC
 int main(void)
 {
     int s;
@@ -27,21 +21,3 @@ int main(void)
 	}
     return 0;
 }
-#endif //REC
-
-
-
-#if TYPE == SEN
-int main(void)
-{
-    char array[100];
-    uint8_t Qos[]={1, 2};
-
-	connectToMOPS();
-	for(;;){
-		usleep(300000);
-		publishMOPS("Jakis", "Pierwsza wiadomosc", 10);
-	}
-    return 0;
-}
-#endif //SEN
