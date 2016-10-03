@@ -1,13 +1,10 @@
-################################################################################
-# Automatically-generated file. Do not edit!
-################################################################################
-
 -include ../makefile.init
 
-RM := rm -rf
+RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -28,13 +25,13 @@ all: Local_Proces
 Local_Proces: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o "Local_Proces" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/usr/xenomai/lib -o "Local_Proces" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) Local_Proces
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces
 	-@echo ' '
 
 .PHONY: all clean dependents

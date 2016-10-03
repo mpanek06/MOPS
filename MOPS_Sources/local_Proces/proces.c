@@ -8,7 +8,7 @@
 
 #define SEN 1
 #define REC 2
-#define TYPE SEN   //1 - sender, 2 - receiver
+#define TYPE REC   //1 - sender, 2 - receiver
 
 
 #if TYPE == REC
@@ -40,7 +40,7 @@ int main(void)
 	connectToMOPS();
 	for(;;){
 		usleep(300000);
-		publishMOPS("Jakis", "Pierwsza wiadomosc");
+		publishMOPS("Jakis", "Pierwsza wiadomosc", 10);
 	}
     return 0;
 }

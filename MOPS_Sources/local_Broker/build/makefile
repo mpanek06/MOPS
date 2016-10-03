@@ -1,13 +1,10 @@
-################################################################################
-# Automatically-generated file. Do not edit!
-################################################################################
-
 -include ../makefile.init
 
-RM := rm -rf
+RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -22,19 +19,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: MOPS_local_Broker
+all: MOPS_Local_Broker
 
 # Tool invocations
-MOPS_local_Broker: $(OBJS) $(USER_OBJS)
+MOPS_Local_Broker: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o "MOPS_local_Broker" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/usr/xenomai/lib -o "MOPS_Local_Broker" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) MOPS_local_Broker
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) MOPS_Local_Broker
 	-@echo ' '
 
 .PHONY: all clean dependents
