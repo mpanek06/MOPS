@@ -25,13 +25,13 @@ all: Local_Proces_Sub
 Local_Proces_Sub: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L/usr/xenomai/lib -o "Local_Proces_Sub" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/usr/xenomai/lib -o "Local_Proces_Sub.out" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces_Sub
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces_Sub.out
 	-@echo ' '
 
 .PHONY: all clean dependents

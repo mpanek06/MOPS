@@ -25,13 +25,13 @@ all: Local_Proces_Pub
 Local_Proces_Pub: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L/usr/xenomai/lib -o "Local_Proces_Pub" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/usr/xenomai/lib -o "Local_Proces_Pub.out" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces_Pub
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Local_Proces_Pub.out
 	-@echo ' '
 
 .PHONY: all clean dependents
