@@ -14,7 +14,7 @@ int main(void)
     uint8_t Qos[]={1, 2};
 
 	s = connectToMOPS();
-	subscribeMOPS(topic, Qos, 2);
+	subscribeOnceMOPS("Jakis", 0);
 	for(;;){
 		readMOPS(array, 100);
 		printf("%s\n", array);

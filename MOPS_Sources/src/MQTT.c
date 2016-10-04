@@ -410,7 +410,6 @@ uint16_t BuildSubscribeMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topic, 
 	return (uint16_t) index;
 }
 
-
 /**
  * @brief Preparing "Subscribe Acknowledgment message" of MQTT protocol.
  * @param[out] Buffer Buffer into which built message will be written.

@@ -8,13 +8,10 @@
 
 int main(void)
 {
-    char array[100];
-    uint8_t Qos[]={1, 2};
-
 	connectToMOPS();
 	for(;;){
 		usleep(300000);
-		publishMOPS("Jakis", "Pierwsza wiadomosc", 10);
+		publishMOPS("Jakis", "Pierwsza wiadomosc", 18);
 	}
     return 0;
 }

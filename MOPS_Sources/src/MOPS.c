@@ -236,9 +236,9 @@ void publishMOPS(char *Topic, char *Message, int MessageLen) {
 }
 
 /**
- * @brief Sends to broker information with subscription of specified topic (user interface function).
+ * @brief Sends to broker information with subscription of specified list of topics (user interface function).
  *
- * @param[in] TopicList List of topics names to subscribe (list of strings).
+ * @param[in] TopicName Topics name to subscribe (string).
  * @param[in] QosList List of required Quality of Service (for now only 0 available).
  * @param[in] NoOfTopics Length of topics list.
  */
@@ -248,6 +248,31 @@ void subscribeMOPS(char **TopicList, uint8_t *QosList, uint8_t NoOfTopics) {
 	uint16_t packetID, written;
 	written = BuildSubscribeMessage((uint8_t*) buffer, sizeof(buffer),
 			(uint8_t**) TopicList, QosList, NoOfTopics, &packetID);
+
+	if (sendToMOPS(buffer, written) == -1) {
+		perror("send");
+	}
+}
+
+/**
+ * @brief Sends to broker information with subscription of one specified topic (user interface function).
+ *
+ * @param[in] TopicName Topics name to subscribe (string).
+ * @param[in] Qos Required Quality of Service (for now only 0 available).
+ */
+void subscribeOnceMOPS(char *TopicName, uint8_t Qos) {
+	char buffer[MAX_QUEUE_MESSAGE_SIZE+1];
+	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+	uint16_t packetID, written;
+
+	uint8_t QosList[1];
+	QosList[0] = Qos;
+
+	char *TopicList[1];
+	TopicList[0] = TopicName;
+
+	written = BuildSubscribeMessage((uint8_t*) buffer, sizeof(buffer),
+			(uint8_t**) TopicList, QosList, 1, &packetID);
 
 	if (sendToMOPS(buffer, written) == -1) {
 		perror("send");
@@ -930,7 +955,6 @@ void AnalyzeIncomingUDP(uint8_t *Buffer, int written_bytes) {
 void UpdateTopicList(uint8_t *Buffer, int BufferLen) {
 	uint16_t index = 0, messageLength = 0;
 	uint16_t tempTopicLength = 0, tempTopicID = 0;
-	uint8_t err;
 
 	messageLength = MSBandLSBTou16(Buffer[1], Buffer[2]) + 3;
 	index += 3;
@@ -939,17 +963,8 @@ void UpdateTopicList(uint8_t *Buffer, int BufferLen) {
 		tempTopicLength = MSBandLSBTou16(Buffer[index + 2], Buffer[index + 3]);
 		index += 4;
 
-		err = AddTopicToList(list, Buffer + index, tempTopicLength,
-				tempTopicID);
+		AddTopicToList(list, Buffer + index, tempTopicLength, tempTopicID);
 		index += tempTopicLength;
-		/*
-		if (err == 1)
-			printf("Brak miejsca na liscie! \n");
-		if (err == 0)
-			printf("Dodalem, id: %d \n", tempTopicID);
-		if (err == 2)
-			printf("Topic, id: %d, juz istnieje. \n", tempTopicID);
-		*/
 	}
 }
 
