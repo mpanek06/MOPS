@@ -127,6 +127,21 @@ typedef struct SubscriberList {
 } SubscriberList;
 
 /**
+ * @struct PublishHandler
+ * @brief Handler used for publishing
+ *
+ * This type is returned by advertising function.
+ * It contains topic name and poniter to publishing function.
+ */
+typedef struct PublishHandler {
+	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
+	char *TopicName;
+	/** Pointer to publishing finction. */
+	void (*publish)(char*,void*);
+} PublishHandler;
+
+
+/**
  * @enum MOPS_STATE
  * @brief State of MOPS broker.
  *
@@ -144,6 +159,8 @@ int connectToMOPS();
 int sendToMOPS(char *buffer, uint16_t buffLen);
 int recvFromMOPS(char *buffer, uint16_t buffLen);
 
+void publishMOPShdlr(char* Message, PublishHandler *self);
+PublishHandler advertiseMOPS(char *Topic);
 void publishMOPS(char *Topic, char *Message, int MessageLen);
 void subscribeToOneTopicMOPS(char *TopicName, uint8_t Qos);
 void subscribeMOPS(char **TopicName, uint8_t *QosList, uint8_t NoOfTopics);

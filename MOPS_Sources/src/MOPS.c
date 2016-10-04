@@ -218,6 +218,23 @@ int recvFromMOPS(char *buffer, uint16_t buffLen) {
 #endif //TARGET_DEVICE == RTnode
 
 /**
+ * @brief Advertising specified topic (user interface function). Returns handler for publishing.
+ *
+ * @param[in] Topic Topic name (as a string).
+ */
+
+PublishHandler advertiseMOPS(char *Topic){
+	PublishHandler publishHdlr;
+	publishHdlr.TopicName = Topic;
+	publishHdlr.publish = publishMOPShdlr;
+	return publishHdlr;
+}
+
+void publishMOPShdlr(char* Message, PublishHandler *self){
+	publishMOPS(self->TopicName, Message, sizeof(Message));
+}
+
+/**
  * @brief Publishing specified message under specified topic (user interface function).
  *
  * @param[in] Topic Message topic name (as a string).

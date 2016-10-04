@@ -9,9 +9,12 @@
 int main(void)
 {
 	connectToMOPS();
+
+	PublishHandler pub = advertiseMOPS("Jakis");
+	
 	for(;;){
 		usleep(300000);
-		publishMOPS("Jakis", "Pierwsza wiadomosc", 18);
+		pub.publish("test", &pub);
 	}
     return 0;
 }
