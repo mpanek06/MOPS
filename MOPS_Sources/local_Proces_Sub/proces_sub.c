@@ -8,13 +8,11 @@
 
 int main(void)
 {
-    int s;
     char array[100];
-    char *topic[2]={"Jakis_tam_topic", "Jakis"};
-    uint8_t Qos[]={1, 2};
 
-	s = connectToMOPS();
+	connectToMOPS();
 	subscribeOnceMOPS("Jakis", 0);
+	
 	for(;;){
 		readMOPS(array, 100);
 		printf("%s\n", array);
