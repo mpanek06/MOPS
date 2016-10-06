@@ -151,7 +151,7 @@ typedef struct PublishHandler {
 enum MOPS_STATE {
 	SEND_NOTHING = 1,/**< Usual state - process as usual, receive and send messages. */
 	SEND_REQUEST,    /**< Init state - responsible for request for all known topics list. */
-	SEND_TOPIC_LIST, /**< Topics respond - set when some RTnet participant requested for full topic list.*/
+	SEND_TOPIC_LIST, /**< Topics response - set when some RTnet participant requested for full topic list.*/
 };
 
 // ***************   Funtions for local processes   ***************//

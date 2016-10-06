@@ -64,7 +64,7 @@ uint16_t output_index = 0;	/**< Index of written bytes to #output_buffer. */
 uint16_t waiting_output_index = 0;	/**< Index of written bytes to #waiting_output_buffer. */
 uint16_t waiting_input_index = 0;	/**< Index of written bytes to #waiting_input_buffer. */
 
-TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topic with theirs ID. ID=0 is for candidates.*/
+TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs. ID=0 is for candidates.*/
 SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
 MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
 
@@ -753,15 +753,15 @@ uint8_t AddTopicToList(TopicID list[], uint8_t *topic, uint16_t topicLen,
 }
 
 /**
- * @brief Function fired directly after opening RTnet time slot to apply IDs for all
- * 'candidates' (topics with id=0).
+ * @brief Function called directly after opening RTnet time slot to apply IDs for all
+ * 'candidate' topics (the ones with id=0).
  *
- * If publisher announce a topic which has not been published yet, it goes to topic list
- * as a 'candidate'. When broker has permission to send his frame to RTnet, get right to
- * apply new ID to all that candidates. In this time that topics became 'local' (local
- * flag sets to 1). Now broker has to announce all local topics to other brokers in
+ * If publisher announced a topic that has not been published yet, it goes to topic list
+ * as a 'candidate'. When broker has permission to send his frame to RTnet it gets right to
+ * apply new IDs to all candidates. At that time such topics become 'local' (local
+ * flag is set to 1). Now broker has to announce all local topics to other brokers in
  * RTnet sending "New Topic" header containing all local topics - after that topics
- * became 'global'.
+ * become 'global'.
  *
  * @return 1 - if there was at least one candidate changed into local topic,\n
  * 0 - if there was not any candidates.
@@ -865,9 +865,9 @@ uint16_t GetTopicNameFromID(uint16_t id, uint8_t *topic){
  * @brief Initialization of topic list.
  *
  * Every element of topic list is erased: fields 'ID' and 'LocalTopic' are set to 0,
- * array 'Topic' is full filled with \0.
+ * array 'Topic' is fulfilled with \0.
  *
- * @param[in,out] list List of topic which will be initialed.
+ * @param[in,out] list List of topic which will be initialized.
  * @post All fields of variable list have been erased.
  */
 void InitTopicList(TopicID list[]) {
@@ -1488,14 +1488,13 @@ void AnalyzeProcessMessage(uint8_t *buffer, int bytes_wrote, int ClientID) {
 /**
  * @brief Serving one single pure MQTT 'publish' packet.
  *
- * Here single MQTT 'publish' frame is separated into a parts and analyzed
- * very carefully.
+ * Here single MQTT 'publish' frame is divided into parts and analyzed.
  *
  * @param[in] buffer Buffer containing one single MQTT frame.
- * @param[in] FrameLen Number of bytes which that frame takes.
- * @post After that function frame is copied into #output_buffer
+ * @param[in] FrameLen Frame length (in bytes).
+ * @post Frame is copied into #output_buffer
  * (if topic has been already known) or to #waiting_output_buffer
- * (if we do now know yet what is topic ID).
+ * (if we do now know yet what topic ID is).
  */
 void ServePublishMessage(uint8_t *buffer, int FrameLen) {
 	uint8_t topicTemp[MAX_TOPIC_LENGTH + 1];
@@ -1528,14 +1527,13 @@ void ServePublishMessage(uint8_t *buffer, int FrameLen) {
 /**
  * @brief Serving one single pure MQTT 'subscribe' packet.
  *
- * Here single MQTT 'subscribe' frame is separated into a parts and analyzed
- * very carefully.
+ * Here single MQTT 'subscribe' frame is divided into parts and analyzed.
  *
  * @param[in] buffer Buffer containing one single MQTT frame.
- * @param[in] FrameLen Number of bytes which that frame takes.
+ * @param[in] FrameLen Length of frame (in bytes).
  * @param[in] ClientID ID of client which sent 'subscribe' request.
- * @post After that function new client is added to 'subscription list'
- * (if there is enough place of course).
+ * @post New client's ID is added to 'subscription list'
+ * (if there is enough place)co 
  */
 void ServeSubscribeMessage(uint8_t *buffer, int FrameLen, int ClientID) {
 	uint16_t TopicLen, index = 0;
@@ -1553,7 +1551,7 @@ void ServeSubscribeMessage(uint8_t *buffer, int FrameLen, int ClientID) {
  * @brief Apply new subscription: connect given client ID with given topic name.
  * @param[in] topic Topic name (as a string).
  * @param[in] topicLen Topic name length (in bytes).
- * @param[in] ClientID ID of client which should be added to 'subscription list'.
+ * @param[in] ClientID ID of client that should be added to 'subscription list'.
  * @return -1 - if subscription already exists.\n
  * 0 - if there is no place in 'subscription list' to store new one.\n
  * >0 - if subscription has been added successfully.\n
@@ -1584,12 +1582,12 @@ int AddToSubscribersList(uint8_t *topic, uint16_t topicLen, int ClientID) {
 /**
  * @brief Push buffer content to a #waiting_output_buffer.
  *
- * This is used when topic is only 'candidate' (do not has any ID
+ * This is used when topic is only 'candidate' (does not have any ID
  * yet) so frame has to be stored in 'waiting tab' and waiting
  * for ID applying to that topic.
  *
  * @param[in] buffer Buffer containing frame to push it to #waiting_output_buffer.
- * @param[in] FrameLen Number of bytes which should be copied into waiting tab.
+ * @param[in] FrameLen Number of bytes that should be copied into waiting tab.
  * @post Frame is added to #waiting_output_buffer this is why for that operation
  * mutex #waiting_output_lock is blocked.
  */
@@ -1609,7 +1607,7 @@ void AddPacketToWaitingTab(uint8_t *buffer, int FrameLen) {
  * in array ready to send to RTnet.
  *
  * @param[in] buffer Buffer containing frame to push it to #output_buffer.
- * @param[in] FrameLen Number of bytes which should be copied into final tab.
+ * @param[in] FrameLen Number of bytes that should be copied into final tab.
  * @post Frame is added to #output_buffer this is why for that operation
  * mutex #output_lock is blocked.
  */
@@ -1648,13 +1646,13 @@ void AddPacketToFinalTab(uint8_t *buffer, int FrameLen, uint16_t topicID) {
 /**
  * @brief Reinterpreting #waiting_output_buffer content.
  *
- * Just before sending new data into RTnet, broker apply new ID
- * to 'candidate' topics. That is way some of those topic messages
+ * Just before sending new data into RTnet, broker applies new IDs
+ * to 'candidate' topics. That is why some of those topics messages
  * can wait in #waiting_output_buffer for sending them. This function
- * once again interpret them and move into final buffer such frames
+ * once again interprets them and moves into final buffer esuch frames
  * for which topics are already known.
  *
- * @post This function copy all content of #waiting_output_buffer into
+ * @post This function copies all content of #waiting_output_buffer into
  * temporary buffer. That is why #waiting_output_buffer is erased.
  */
 void MoveWaitingToFinal() {
