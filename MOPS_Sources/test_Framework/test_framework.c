@@ -11,7 +11,7 @@
 #define INTERVAL 5000
 
 long long sentTime = 0, recTime = 0;
-long no_of_data = 0;
+long noOfData = 0, noOfCorruptedData = 0, noOfSentData = 0;
 double average = 0;
 long sum = 0;
 
@@ -22,6 +22,47 @@ pthread_mutex_t listLock;
 
 my_node *received = NULL;
 my_node *sent = NULL;
+
+void printStats()
+{
+	int tmpPacketData = 0;
+	my_node *sent_ptr = sent;
+	my_node *rec_ptr;
+
+	while(NULL != sent_ptr)
+	{
+		tmpPacketData = sent_ptr->packetData;
+		sentTime = sent_ptr->timestamp;
+		rec_ptr = findByValue(&received, tmpPacketData);
+
+		if(NULL != rec_ptr)
+		{
+			recTime = rec_ptr->timestamp;
+			sum += (recTime-sentTime);
+			++noOfData;
+			average = (double) sum / (double)noOfData;
+
+			printf("suma: %d, srednia: %f \n", sum, average );
+
+			deleteByValue(&received, tmpPacketData);
+			deleteByValue(&sent, tmpPacketData);
+
+		}
+      	else
+      	{
+      		// nie ma takiego w odbernaych wiec zgubiona paczka
+      		++noOfCorruptedData;
+      		printf("corrupted: %d, noOfCorruptedData\n", tmpPacketData, noOfCorruptedData);
+      		deleteByValue(&sent, tmpPacketData);
+      	}
+
+      	sent_ptr = sent_ptr->next;
+   	}
+
+   	printf("Average time: %f, Sent data: %d, Lost data: %d Lost data[%]: %f% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
+		
+}
+
 
 long long getCurrentTimeNs(void)
 {
@@ -53,29 +94,8 @@ void *SubFun()
 			recTime = getCurrentTimeNs();
 			receivedDataInt = atoi(receivedData);
 			
-			// insertFirst(received, receivedDataInt, recTime);
-
-			// if(NULL != nodePtr)
-			// {
-			// 	//Recalculating average time
-			// 	sum = ((average * no_of_data) + (recTime-sentTime));
-			// 	++no_of_data;
-			// 	average = (double) sum / (double)no_of_data;
-				
-			// 	printf("received data: %s\n", receivedData);
-			// 	printf("%f %ld %lld\n", average, no_of_data, recTime-sentTime);
-				
-			// 	pthread_mutex_lock(&listLock);
-			// 	deleteByValue(receivedDataInt);
-			// 	pthread_mutex_unlock(&listLock);
-			// }
-			// else //no such data was sent by publisher so rec data must be corrupted
-			// {
-			// 	printf("corrupted data: %s\n", receivedData);
-			// }
-		
-
-		} 
+			insertFirst(&received, receivedDataInt, recTime);
+		}
 	}
 	return 0;
 }
@@ -99,11 +119,8 @@ void *PubFun()
 			pub.publish(buff, &pub);
 			sentTime = getCurrentTimeNs();
 			insertFirst(&sent, i, sentTime);
-			if(sent == NULL)
-			{
-				printf("sent jest NULLem");
-			}else
-				printf("dane ostatio dodoana: %d", sent->packetData);
+			printf("dodane: %lld \n", sent->timestamp );
+			++noOfSentData;
 			usleep(INTERVAL);
 		}
 
@@ -139,10 +156,10 @@ int main(void)
 			endPub = true;
 			usleep(INTERVAL*40);
 			endSub = true;
-			// printStats();
+			printStats();
 			// 
-			printList(sent);
-			// printList(received);
+			// printList(&sent);
+			// printList(&received);
 			break;
     	}
     }
