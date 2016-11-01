@@ -11,7 +11,7 @@ int main(void)
     char array[100];
 
 	connectToMOPS();
-	subscribeOnceMOPS("Jakis", 0);
+	subscribeOnceMOPS("node_sub", 0);
 	
 	for(;;){
 		readMOPS(array, 100);
