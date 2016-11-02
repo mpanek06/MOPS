@@ -52,6 +52,7 @@
 /** Name of general queue (processes->broker). */
 #define QUEUE_NAME "/MOPS_path"
 
+
 /**
  * @struct MOPS_Queue
  * @brief Structure for connecting two file descriptors
@@ -218,5 +219,70 @@ void MoveWaitingToFinal();
 
 void u16ToMSBandLSB(uint16_t u16bit, uint8_t *MSB, uint8_t *LSB);
 uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB);
+void lockMemoryInit(void);
+int waitOnTDMASync(void);
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Czesc zmiennych globalnych - pozniej zostanie przeniesiona do plikow .h dla tergetow odpowoiednich
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// // *************** Global variables for local processes *************** //
+static MOPS_Queue proc_mops_queue;
+// // *************** Global variables for local processes *************** //
+
+// // *************** Global variables for MOPS broker *************** //
+static uint8_t MOPS_State = SEND_REQUEST;
+uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
+
+// #if TARGET_DEVICE == RTnode
+// uint8_t *output_buffer;				 		 	/**< Buffer for sending data to RTnet. */
+// #endif //TARGET_DEVICE == RTnode
+
+#if TARGET_DEVICE == Linux
+uint8_t output_buffer[UDP_MAX_SIZE]; 		 	/**< Buffer for sending data to RTnet. */
+#endif //TARGET_DEVICE == Linux
+
+uint8_t waiting_output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for incoming data from processes
+											 	* (waiting for sending them to RTnet). */
+uint8_t waiting_input_buffer[UDP_MAX_SIZE];  	/**< Buffer for outgoing data to processes
+											 	* (waiting for sending them to processes). */
+
+extern uint16_t input_index;			/**< Index of written bytes to #input_buffer. */
+extern uint16_t output_index;			/**< Index of written bytes to #output_buffer. */
+extern uint16_t waiting_output_index;	/**< Index of written bytes to #waiting_output_buffer. */
+extern uint16_t waiting_input_index;	/*< Index of written bytes to #waiting_input_buffer. */
+
+TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs. ID=0 is for candidates.*/
+SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
+MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
+
+// #if TARGET_DEVICE == Linux
+pthread_mutex_t output_lock; 		/**< mutex for blocking access to #output_buffer. */
+pthread_mutex_t input_lock; 		/**< mutex for blocking access to #input_buffer. */
+pthread_mutex_t waiting_output_lock;/**< mutex for blocking access to #waiting_output_buffer. */
+pthread_mutex_t	waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
+// #endif
+// #if TARGET_DEVICE == RTnode
+// SemaphoreHandle_t output_lock;			/**< mutex for blocking access to #output_buffer. */
+// SemaphoreHandle_t input_lock;			/**< mutex for blocking access to #input_buffer. */
+// SemaphoreHandle_t waiting_output_lock;	/**< mutex for blocking access to #waiting_output_buffer. */
+// SemaphoreHandle_t waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
+// #endif
+// // *************** Global variables for MOPS broker *************** //
+
+extern int TDMA_Dev;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//		KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIECKONIEC KONIECKONIEC KONIEC
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Czesc zmiennych globalnych - pozniej zostanie przeniesiona do plikow .h dla tergetow odpowoiednich
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif /* MOPS_H_ */

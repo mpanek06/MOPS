@@ -10,7 +10,6 @@
 
 #define INTERVAL 5000
 
-long long sentTime = 0, recTime = 0;
 long noOfData = 0, noOfCorruptedData = 0, noOfSentData = 0;
 double average = 0;
 long sum = 0;
@@ -20,14 +19,15 @@ bool endProgramSigRec = false, endPub = false, endSub = false;
 pthread_t pub_thread, sub_thread;
 pthread_mutex_t listLock;
 
-my_node *received = NULL;
-my_node *sent = NULL;
+listNode *received = NULL;
+listNode *sent = NULL;
 
 void printStats()
 {
+	long long sentTime = 0, recTime = 0;
 	int tmpPacketData = 0;
-	my_node *sent_ptr = sent;
-	my_node *rec_ptr;
+	listNode *sent_ptr = sent;
+	listNode *rec_ptr;
 
 	while(NULL != sent_ptr)
 	{
@@ -42,8 +42,6 @@ void printStats()
 			++noOfData;
 			average = (double) sum / (double)noOfData;
 
-			printf("suma: %d, srednia: %f \n", sum, average );
-
 			deleteByValue(&received, tmpPacketData);
 			deleteByValue(&sent, tmpPacketData);
 
@@ -52,14 +50,13 @@ void printStats()
       	{
       		// nie ma takiego w odbernaych wiec zgubiona paczka
       		++noOfCorruptedData;
-      		printf("corrupted: %d, noOfCorruptedData\n", tmpPacketData, noOfCorruptedData);
       		deleteByValue(&sent, tmpPacketData);
       	}
 
       	sent_ptr = sent_ptr->next;
    	}
 
-   	printf("Average time: %f, Sent data: %d, Lost data: %d Lost data[%]: %f% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
+   	printf("Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %f% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
 		
 }
 
@@ -80,6 +77,7 @@ void *SubFun()
 {
     char receivedData[100];
     int receivedDataInt = 0;
+	long recTime = 0;
 
 	connectToMOPS();
 	subscribeOnceMOPS("node_pub", 0);
@@ -102,10 +100,12 @@ void *SubFun()
 
 void *PubFun()
 {
-	connectToMOPS();
 	char buff[100];
-	PublishHandler pub = advertiseMOPS("node_sub");
 	int i = 0;
+	long sentTime = 0;
+
+	PublishHandler pub = advertiseMOPS("node_sub");
+	connectToMOPS();
 	
 	for(;;)
 	{

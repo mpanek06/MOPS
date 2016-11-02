@@ -1,17 +1,16 @@
 #include <stdbool.h>
 
 /**
- * @brief Adds element to linked list.
+ * @brief Struct used in linked list
  *
- * @param[in] packetData First field of node.
- * @param[in] timestamp Second field of node.
+ * Struct used in linked list
  */
 typedef struct node 
 {
    int packetData;
    long long timestamp;
    struct node *next;
-} my_node;
+} listNode;
 
 
 /**
@@ -20,9 +19,9 @@ typedef struct node
  * @param[in] packetData First field of node.
  * @param[in] timestamp Second field of node.
  */
-void insertFirst(my_node **_head, int packetData, long long timestamp) 
+void insertFirst(listNode **_head, int packetData, long long timestamp) 
 {
-   my_node *ptr = (my_node*) malloc(sizeof(my_node));
+   listNode *ptr = (listNode*) malloc(sizeof(listNode));
 
    ptr->packetData = packetData;
    ptr->timestamp = timestamp;
@@ -33,12 +32,12 @@ void insertFirst(my_node **_head, int packetData, long long timestamp)
 }
 
 /**
- * @brief Adds element to linked list.
+ * @brief Checks if list is empty.
  *
  * @param[in] packetData First field of node.
  * @param[in] timestamp Second field of node.
  */
-bool isEmpty(my_node **head) 
+bool isEmpty(listNode **head) 
 {
    return *head == NULL;
 }
@@ -49,10 +48,10 @@ bool isEmpty(my_node **head)
  * @param[in] packetData First field of node.
  * @param[in] timestamp Second field of node.
  */
-my_node* findByValue(my_node **head, int packetData) 
+listNode* findByValue(listNode **head, int packetData) 
 {
 
-   my_node* current = *head;
+   listNode* current = *head;
 
    if(NULL == *head) 
    {
@@ -81,11 +80,11 @@ my_node* findByValue(my_node **head, int packetData)
  * @param[in] packetData First field of node.
  * @param[in] timestamp Second field of node.
  */
-my_node* deleteByValue(my_node **head, int packetData)
+listNode* deleteByValue(listNode **head, int packetData)
 {
 
-   my_node* current = *head;
-   my_node* previous = NULL;
+   listNode* current = *head;
+   listNode* previous = NULL;
 	
    if(NULL == *head) 
    {
@@ -118,8 +117,8 @@ my_node* deleteByValue(my_node **head, int packetData)
    return current;
 }
 
-void printList(my_node **head) {
-   my_node *ptr = *head;
+void printList(listNode **head) {
+   listNode *ptr = *head;
    printf("\n[ ");
 	
    while(NULL != ptr)
