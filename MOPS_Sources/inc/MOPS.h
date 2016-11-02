@@ -239,9 +239,9 @@ static MOPS_Queue proc_mops_queue;
 static uint8_t MOPS_State = SEND_REQUEST;
 uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
 
-// #if TARGET_DEVICE == RTnode
-// uint8_t *output_buffer;				 		 	/**< Buffer for sending data to RTnet. */
-// #endif //TARGET_DEVICE == RTnode
+ #if TARGET_DEVICE == RTnode
+ uint8_t *output_buffer;				 		 	/**< Buffer for sending data to RTnet. */
+ #endif //TARGET_DEVICE == RTnode
 
 #if TARGET_DEVICE == Linux
 uint8_t output_buffer[UDP_MAX_SIZE]; 		 	/**< Buffer for sending data to RTnet. */
@@ -261,19 +261,19 @@ TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs.
 SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
 MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
 
-#if TARGET_DEVICE == Linux
+ #if TARGET_DEVICE == Linux
 pthread_mutex_t output_lock; 		/**< mutex for blocking access to #output_buffer. */
 pthread_mutex_t input_lock; 		/**< mutex for blocking access to #input_buffer. */
 pthread_mutex_t waiting_output_lock;/**< mutex for blocking access to #waiting_output_buffer. */
 pthread_mutex_t	waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
 #endif
-#if TARGET_DEVICE == RTnode
-SemaphoreHandle_t output_lock;			/**< mutex for blocking access to #output_buffer. */
-SemaphoreHandle_t input_lock;			/**< mutex for blocking access to #input_buffer. */
-SemaphoreHandle_t waiting_output_lock;	/**< mutex for blocking access to #waiting_output_buffer. */
-SemaphoreHandle_t waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
-#endif
-// *************** Global variables for MOPS broker *************** //
+ #if TARGET_DEVICE == RTnode
+ SemaphoreHandle_t output_lock;			/**< mutex for blocking access to #output_buffer. */
+ SemaphoreHandle_t input_lock;			/**< mutex for blocking access to #input_buffer. */
+ SemaphoreHandle_t waiting_output_lock;	/**< mutex for blocking access to #waiting_output_buffer. */
+ SemaphoreHandle_t waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
+ #endif
+// // *************** Global variables for MOPS broker *************** //
 
 extern int TDMA_Dev;
 
