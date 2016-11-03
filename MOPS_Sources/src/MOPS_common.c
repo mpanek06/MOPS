@@ -9,9 +9,10 @@
  *	and broker logic in general. Communication is based on queues mechanism.
  *	Every process is sending its process ID to queue named QUEUE_NAME (on Linux based target).
  */
-#include "MOPS.h"
 #include "MQTT.h"
 #include "MOPS_RTnet_Con.h"
+
+#include "MOPS.h"
 
 #if TARGET_DEVICE == Linux
 #include <sys/select.h>

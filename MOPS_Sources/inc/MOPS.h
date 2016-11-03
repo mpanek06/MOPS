@@ -46,53 +46,11 @@
 #define MAX_NUMBER_OF_SUBSCRIPTIONS  100
 //***************MOPS - RTnet Settings********************
 
-#if TARGET_DEVICE == Linux
-#include <mqueue.h>
-
-/** Name of general queue (processes->broker). */
-#define QUEUE_NAME "/MOPS_path"
-
-
-/**
- * @struct MOPS_Queue
- * @brief Structure for connecting two file descriptors
- * responsible for broker<->process communication.
- *
- * Each new local process which wants to connect to MOPS
- * broker, create to queues with format: \{proces_id}a,
- * \{proces_id}b. First one (a) is for broker->process, second
- * one (b) is process->broker. This structure is used to build
- * 'communication list'.
- * */
-typedef struct MOPS_Queue {
-	/** File descriptor for transmission process->broker*/
-	mqd_t ProcesToMOPS_fd;
-	/** File descriptor for transmission broker->process*/
-	mqd_t MOPSToProces_fd;
-} MOPS_Queue;
-#endif //TARGET_DEVICE == Linux
-#if TARGET_DEVICE == RTnode
-#include "FreeRTOS.h"
-#include "timers.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "rtnet.h"
-#include "rtnet_inet.h"
-
-QueueHandle_t GlobalProcesMopsQueue;
-
-typedef struct MOPS_Queue {
-	QueueHandle_t ProcesToMOPS_fd;
-	QueueHandle_t MOPSToProces_fd;
-}MOPS_Queue;
-#endif //TARGET_DEVICE == RTnode
-
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include "MQTT.h"
-
+#include "MOPS_Linux.h"
 /**
  * @struct TopicID
  * @brief Structure links topic name and its ID.
@@ -193,12 +151,6 @@ void AddTopicCandidate(uint8_t *topic, uint16_t topicLen);
 int GetIDfromTopicName(uint8_t *topic, uint16_t topicLen);
 uint16_t GetTopicNameFromID(uint16_t id, uint8_t *topic);
 void InitProcesConnection();
-#if TARGET_DEVICE == Linux
-int ServeNewProcessConnection(fd_set *set, int listener_fd);
-#endif
-#if TARGET_DEVICE == RTnode
-QueueHandle_t ServeNewProcessConnection();
-#endif
 void CloseProcessConnection(int file_de);
 int AddToMOPSQueue(int MOPS_Proces_fd, int Proces_MOPS_fd);
 void MOPS_QueueInit(MOPS_Queue *queue);
@@ -223,14 +175,6 @@ void lockMemoryInit(void);
 int waitOnTDMASync(void);
 
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//	Czesc zmiennych globalnych - pozniej zostanie przeniesiona do plikow .h dla tergetow odpowoiednich
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 // // *************** Global variables for local processes *************** //
 static MOPS_Queue proc_mops_queue;
 // // *************** Global variables for local processes *************** //
@@ -238,14 +182,6 @@ static MOPS_Queue proc_mops_queue;
 // // *************** Global variables for MOPS broker *************** //
 static uint8_t MOPS_State = SEND_REQUEST;
 uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
-
- #if TARGET_DEVICE == RTnode
- uint8_t *output_buffer;				 		 	/**< Buffer for sending data to RTnet. */
- #endif //TARGET_DEVICE == RTnode
-
-#if TARGET_DEVICE == Linux
-uint8_t output_buffer[UDP_MAX_SIZE]; 		 	/**< Buffer for sending data to RTnet. */
-#endif //TARGET_DEVICE == Linux
 
 uint8_t waiting_output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for incoming data from processes
 											 	* (waiting for sending them to RTnet). */
@@ -261,28 +197,5 @@ TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs.
 SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
 MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
 
- #if TARGET_DEVICE == Linux
-pthread_mutex_t output_lock; 		/**< mutex for blocking access to #output_buffer. */
-pthread_mutex_t input_lock; 		/**< mutex for blocking access to #input_buffer. */
-pthread_mutex_t waiting_output_lock;/**< mutex for blocking access to #waiting_output_buffer. */
-pthread_mutex_t	waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
-#endif
- #if TARGET_DEVICE == RTnode
- SemaphoreHandle_t output_lock;			/**< mutex for blocking access to #output_buffer. */
- SemaphoreHandle_t input_lock;			/**< mutex for blocking access to #input_buffer. */
- SemaphoreHandle_t waiting_output_lock;	/**< mutex for blocking access to #waiting_output_buffer. */
- SemaphoreHandle_t waiting_input_lock;	/**< mutex for blocking access to #waiting_input_buffer. */
- #endif
 // // *************** Global variables for MOPS broker *************** //
-
-extern int TDMA_Dev;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//		KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIEC KONIECKONIEC KONIECKONIEC KONIEC
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//	Czesc zmiennych globalnych - pozniej zostanie przeniesiona do plikow .h dla tergetow odpowoiednich
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #endif /* MOPS_H_ */
