@@ -44,7 +44,6 @@ void printStats()
 
 			deleteByValue(&received, tmpPacketData);
 			deleteByValue(&sent, tmpPacketData);
-
 		}
       	else
       	{

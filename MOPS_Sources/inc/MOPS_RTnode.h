@@ -25,7 +25,7 @@ QueueHandle_t GlobalProcesMopsQueue;
 typedef struct MOPS_Queue {
 	QueueHandle_t ProcesToMOPS_fd;
 	QueueHandle_t MOPSToProces_fd;
-}MOPS_Queue;
+} MOPS_Queue;
 
 QueueHandle_t ServeNewProcessConnection();
  uint8_t *output_buffer;				 		 	/**< Buffer for sending data to RTnet. */
