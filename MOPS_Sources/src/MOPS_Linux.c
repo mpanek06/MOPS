@@ -53,7 +53,7 @@ int connectToMOPS(void) {
 	attr.mq_maxmsg = MAX_QUEUE_MESSAGE_NUMBER;
 	attr.mq_msgsize = MAX_QUEUE_MESSAGE_SIZE;
 	attr.mq_curmsgs = 0;
-	srand ( time(NULL) );
+	startRandomGenrator();
 	sprintf(buffer + 1, "%d", rand()%100000);
 
 	mq = mq_open(QUEUE_NAME, O_WRONLY);
@@ -113,80 +113,6 @@ int recvFromMOPS(char *buffer, uint16_t buffLen) {
 // ***************   Funtions for local processes   ***************//
 
 // ***************   Funtions for MOPS broker   ***************//
-
-//note to refecotrer
-//TODO te dwie funkcje beda musialy zostac przeorbione i wrzucone do commona
-/**
- * @brief Function for sending frames to RTnet.
- *
- * Sending frames is closed in infinite loop so this particular
- * function should be started in separated thread.
- *
- */
-// void threadSendToRTnet() {
-// 	uint8_t are_local_topics = 0;
-// 	int err = 0, _fd = 0;
-
-// #if TARGET_DEVICE == RTnode
-// 	output_buffer = pvRTnetGetUdpDataBuffer(UDP_MAX_SIZE);
-// #endif //TARGET_DEVICE == RTnode
-// #if TARGET_DEVICE == Linux
-// 	// Open tdma device
-// 	//TODO
-// 	_fd = rt_dev_open("TDMA0", O_RDWR);
-// #endif //TARGET_DEVICE == Linux
-// 	if (_fd < 0)
-// 		return;
-
-// 	for (;;) {
-// #if TARGET_DEVICE == Linux
-// 		err = rt_dev_ioctl(_fd, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC);
-// #endif //TARGET_DEVICE == Linux
-// #if TARGET_DEVICE == RTnode
-// 	    xRTnetWaitSync(portMAX_DELAY);
-// #endif //TARGET_DEVICE == RTnode
-// 		if (err)
-// 			printf("Failed to issue RTMAC_RTIOC_WAITONCYCLE, err=%d\n", err);
-// 		switch (MOPS_State) {
-// 		case SEND_NOTHING:
-// 			//check if there are local topic to announce
-// 			are_local_topics = ApplyIDtoNewTopics();
-// 			MoveWaitingToFinal();
-// 			if (are_local_topics)
-// 				SendLocalTopics(list);
-// 			else
-// 				SendEmptyMessage();
-// 			break;
-// 		case SEND_REQUEST:
-// 			SendTopicRequestMessage();
-// 			break;
-// 		case SEND_TOPIC_LIST:
-// 			ApplyIDtoNewTopics();
-// 			MoveWaitingToFinal();
-// 			SendTopicList(list);
-// 			break;
-// 		}
-
-// 		lock_mutex(&output_lock);
-// 		if ((output_index > sizeof(MOPSHeader))	|| (output_buffer[0] == TOPIC_REQUEST)) {
-// 			/* loop-back mechanism */
-// 			lock_mutex(&input_lock);
-// 			memcpy(input_buffer, output_buffer, output_index);
-// 			input_index = output_index;
-// 			AnalyzeIncomingUDP(input_buffer, input_index);
-// 			memset(input_buffer, 0, UDP_MAX_SIZE);
-// 			input_index = 0;
-// 			unlock_mutex(&input_lock);
-// 			/* loop-back mechanism end */
-// 			sendToRTnet(output_buffer, output_index);
-// 		}
-// 		MOPS_State = SEND_NOTHING;
-// 		memset(output_buffer, 0, UDP_MAX_SIZE);
-// 		output_index = 0;
-// 		unlock_mutex(&output_lock);
-// 	}
-// }
-
 /**
  * @brief Adding new local process to broker communication queue.
  *
@@ -380,6 +306,7 @@ void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue) {
 	queue[ClientID].ProcesToMOPS_fd = 0;
 }
 
+// ***************   Tools functions   ******************************//
 void lockMemoryInit(){
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 }
@@ -388,3 +315,9 @@ int waitOnTDMASync(){
 	return rt_dev_ioctl(TDMA_Dev, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC);
 }
 // ***************   Funtions for MOPS broker   ***************//
+
+
+void startRandomGenrator(void){
+	srand(time(NULL));
+}
+// ***************   Tools functions   ******************************//

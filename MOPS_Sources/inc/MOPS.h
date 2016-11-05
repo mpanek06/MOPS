@@ -12,6 +12,10 @@
 #ifndef MOPS_H_
 #define MOPS_H_
 
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/types.h>
+
 /** Linux target value. */
 #define Linux  1
 /** RTnode target value. */
@@ -46,11 +50,10 @@
 #define MAX_NUMBER_OF_SUBSCRIPTIONS  100
 //***************MOPS - RTnet Settings********************
 
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/types.h>
+
 #include "MQTT.h"
 #include "MOPS_Linux.h"
+
 /**
  * @struct TopicID
  * @brief Structure links topic name and its ID.
@@ -169,17 +172,19 @@ void AddPacketToFinalTab(uint8_t *buffer, int FrameLen, uint16_t topicID);
 void MoveWaitingToFinal();
 // ***************   Funtions for local MOPS broker   ***************//
 
+// ***************   Tools functions   ******************************//
 void u16ToMSBandLSB(uint16_t u16bit, uint8_t *MSB, uint8_t *LSB);
 uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB);
 void lockMemoryInit(void);
 int waitOnTDMASync(void);
+void startRandomGenrator(void);
+// ***************   Tools functions   ******************************//
 
-
-// // *************** Global variables for local processes *************** //
+// *************** Global variables for local processes *************** //
 static MOPS_Queue proc_mops_queue;
-// // *************** Global variables for local processes *************** //
+// *************** Global variables for local processes *************** //
 
-// // *************** Global variables for MOPS broker *************** //
+// *************** Global variables for MOPS broker *************** //
 static uint8_t MOPS_State = SEND_REQUEST;
 uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
 
@@ -196,6 +201,6 @@ extern uint16_t waiting_input_index;	/*< Index of written bytes to #waiting_inpu
 TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs. ID=0 is for candidates.*/
 SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
 MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
+// *************** Global variables for MOPS broker *************** //
 
-// // *************** Global variables for MOPS broker *************** //
 #endif /* MOPS_H_ */

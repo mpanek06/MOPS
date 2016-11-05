@@ -14,14 +14,6 @@
 
 #include "MOPS.h"
 
-#if TARGET_DEVICE == Linux
-#include <sys/select.h>
-#include <sys/un.h>
-#include <mqueue.h>
-#include <sys/mman.h>
-#include <time.h>
-#endif //TARGET_DEVICE == Linux
-
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -321,7 +313,7 @@ void threadRecvFromRTnet() {
  */
 void threadSendToRTnet() {
 	uint8_t are_local_topics = 0;
-	int err = 0;
+	int waitOnTDMASync_ERR = 0;
 
 #if TARGET_DEVICE == RTnode
 	output_buffer = pvRTnetGetUdpDataBuffer(UDP_MAX_SIZE);
@@ -337,58 +329,53 @@ void threadSendToRTnet() {
 		return;
 
 	for (;;) {
-
-// #if TARGET_DEVICE == Linux
-// 		err = rt_dev_ioctl(_fd, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC);
-// #endif //TARGET_DEVICE == Linux
-
-// #if TARGET_DEVICE == RTnode
-// 	    xRTnetWaitSync(portMAX_DELAY);
-// #endif //TARGET_DEVICE == RTnode
 	    
-	    err = waitOnTDMASync();
+	    waitOnTDMASync_ERR = waitOnTDMASync();
 
-		if (err)
-			printf("Failed to issue RTMAC_RTIOC_WAITONCYCLE, err=%d\n", err);
-		switch (MOPS_State) {
-		case SEND_NOTHING:
-			//check if there are local topic to announce
-			are_local_topics = ApplyIDtoNewTopics();
-			MoveWaitingToFinal();
-			if (are_local_topics)
-				SendLocalTopics(list);
-			else
-				SendEmptyMessage();
-			break;
-		case SEND_REQUEST:
-			SendTopicRequestMessage();
-			break;
-		case SEND_TOPIC_LIST:
-			ApplyIDtoNewTopics();
-			MoveWaitingToFinal();
-			SendTopicList(list);
-			break;
+		if (waitOnTDMASync_ERR){
+			printf("Failed to issue RTMAC_RTIOC_WAITONCYCLE, err=%d\n", waitOnTDMASync_ERR);
+			continue;
 		}
+			switch (MOPS_State) {
+			case SEND_NOTHING:
+				//check if there are local topic to announce
+				are_local_topics = ApplyIDtoNewTopics();
+				MoveWaitingToFinal();
+				if (are_local_topics)
+					SendLocalTopics(list);
+				else
+					SendEmptyMessage();
+				break;
+			case SEND_REQUEST:
+				SendTopicRequestMessage();
+				break;
+			case SEND_TOPIC_LIST:
+				ApplyIDtoNewTopics();
+				MoveWaitingToFinal();
+				SendTopicList(list);
+				break;
+			}
 
-		lock_mutex(&output_lock);
-		if ((output_index > sizeof(MOPSHeader))	|| (output_buffer[0] == TOPIC_REQUEST)) {
-			/* loop-back mechanism */
-			lock_mutex(&input_lock);
-			memcpy(input_buffer, output_buffer, output_index);
-			input_index = output_index;
-			AnalyzeIncomingUDP(input_buffer, input_index);
-			memset(input_buffer, 0, UDP_MAX_SIZE);
-			input_index = 0;
-			unlock_mutex(&input_lock);
-			/* loop-back mechanism end */
-			sendToRTnet(output_buffer, output_index);
-		}
-		MOPS_State = SEND_NOTHING;
-		memset(output_buffer, 0, UDP_MAX_SIZE);
-		output_index = 0;
-		unlock_mutex(&output_lock);
+			lock_mutex(&output_lock);
+			if ((output_index > sizeof(MOPSHeader))	|| (output_buffer[0] == TOPIC_REQUEST)) {
+				/* loop-back mechanism */
+				lock_mutex(&input_lock);
+				memcpy(input_buffer, output_buffer, output_index);
+				input_index = output_index;
+				AnalyzeIncomingUDP(input_buffer, input_index);
+				memset(input_buffer, 0, UDP_MAX_SIZE);
+				input_index = 0;
+				unlock_mutex(&input_lock);
+				/* loop-back mechanism end */
+				sendToRTnet(output_buffer, output_index);
+			}
+			MOPS_State = SEND_NOTHING;
+			memset(output_buffer, 0, UDP_MAX_SIZE);
+			output_index = 0;
+			unlock_mutex(&output_lock);
 	}
 }
+
 
 /**
  * @brief Preparing "Nothing" MOPS protocol header and putting it
@@ -1184,6 +1171,7 @@ void MoveWaitingToFinal() {
 }
 // ***************   Funtions for MOPS broker   ***************//
 
+// ***************   Tools functions   ******************************//
 /**
  * @brief Conversion uint16_t into two uint8_t values.
  *
@@ -1213,3 +1201,4 @@ uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB) {
 	temp += LSB;
 	return temp;
 }
+// ***************   Tools functions   ******************************//

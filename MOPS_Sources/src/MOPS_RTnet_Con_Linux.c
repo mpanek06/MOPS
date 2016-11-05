@@ -13,12 +13,10 @@
 #include "MOPS.h"
 #include "MOPS_RTnet_Con.h"
 
-#if TARGET_DEVICE == Linux
 #include <sys/un.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
-#endif //TARGET_DEVICE == Linux
 
 #include <stdio.h>
 #include <stdlib.h>
