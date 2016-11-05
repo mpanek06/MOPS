@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "MOPS.h"
 #include "list.h"
@@ -55,7 +56,7 @@ void printStats()
       	sent_ptr = sent_ptr->next;
    	}
 
-   	printf("Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %f% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
+   	printf("Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %f%% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
 		
 }
 
@@ -67,9 +68,12 @@ long long getCurrentTimeNs(void)
     return (te.tv_sec*1000LL + te.tv_usec/1000);
 }
 
-void sigHandler(int signo)
+void sigHandler(int sig, siginfo_t *si, void *unused)
 {
-	endProgramSigRec = true;
+	if(SIGINT == sig)
+	{
+		endProgramSigRec = true;
+	}
 }
 
 void *SubFun()
@@ -132,7 +136,7 @@ int main(void)
 	pthread_mutex_init(&listLock, NULL);
 	
 	struct sigaction act;
-	act.sa_sigaction = &sigHandler;
+	act.sa_sigaction = sigHandler;
 	act.sa_flags = SA_SIGINFO;
 
 	if (sigaction(SIGINT, &act, NULL) < 0) 

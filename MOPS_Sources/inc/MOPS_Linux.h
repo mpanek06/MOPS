@@ -13,7 +13,7 @@
 #define MOPS_LINUX_H_
 
 #include <mqueue.h>
-
+#include <string.h>
 /** Name of general queue (processes->broker). */
 #define QUEUE_NAME "/MOPS_path"
 

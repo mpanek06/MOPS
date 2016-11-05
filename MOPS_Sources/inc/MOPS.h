@@ -64,7 +64,7 @@ typedef struct PublishHandler {
 	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
 	char *TopicName;
 	/** Pointer to publishing finction. */
-	void (*publish)(char*,void*);
+	void (*publish)();
 } PublishHandler;
 
 
@@ -89,7 +89,7 @@ int recvFromMOPS(char *buffer, uint16_t buffLen);
 void publishMOPShdlr(char* Message, PublishHandler *self);
 PublishHandler advertiseMOPS(char *Topic);
 void publishMOPS(char *Topic, char *Message, int MessageLen);
-void subscribeToOneTopicMOPS(char *TopicName, uint8_t Qos);
+void subscribeOnceMOPS(char *TopicName, uint8_t Qos);
 void subscribeMOPS(char **TopicName, uint8_t *QosList, uint8_t NoOfTopics);
 int readMOPS(char *buf, uint8_t length);
 int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen);
@@ -135,6 +135,7 @@ void ServeSubscribeMessage(uint8_t *buffer, int FrameLen, int ClientID);
 void AddPacketToWaitingTab(uint8_t *buffer, int FrameLen);
 void AddPacketToFinalTab(uint8_t *buffer, int FrameLen, uint16_t topicID);
 void MoveWaitingToFinal();
+void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue);
 // ***************   Funtions for local MOPS broker   ***************//
 
 // ***************   Tools functions   ******************************//
@@ -148,11 +149,11 @@ void startRandomGenrator(void);
 // ***************   Tools functions   ******************************//
 
 // *************** Global variables for local processes *************** //
-static MOPS_Queue proc_mops_queue;
+
 // *************** Global variables for local processes *************** //
 
 // *************** Global variables for MOPS broker *************** //
-static uint8_t MOPS_State = SEND_REQUEST;
+extern uint8_t MOPS_State;
 uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
 
 uint8_t waiting_output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for incoming data from processes

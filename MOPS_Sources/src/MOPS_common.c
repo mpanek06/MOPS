@@ -27,6 +27,7 @@
 #include <limits.h>
 
 int TDMA_Dev = 0;
+uint8_t MOPS_State = SEND_REQUEST;
 uint16_t input_index = 0;			/**< Index of written bytes to #input_buffer. */
 uint16_t output_index = 0;			/**< Index of written bytes to #output_buffer. */
 uint16_t waiting_output_index = 0;	/**< Index of written bytes to #waiting_output_buffer. */

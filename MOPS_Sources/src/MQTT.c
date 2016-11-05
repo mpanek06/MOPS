@@ -15,7 +15,6 @@
 #include "MQTTConf.h"
 
 #include <stdlib.h>
-#include <strings.h>
 #include <time.h>
 
 /**

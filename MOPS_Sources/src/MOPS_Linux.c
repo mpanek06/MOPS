@@ -33,7 +33,7 @@
 
 
 // *************** Global variables for MOPS broker *************** //
-
+static MOPS_Queue proc_mops_queue;
 // ***************   Funtions for local processes   ***************//
 
 /**
