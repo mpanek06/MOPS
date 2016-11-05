@@ -15,42 +15,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/types.h>
-
-/** Linux target value. */
-#define Linux  1
-/** RTnode target value. */
-#define RTnode 2
-
-//***************** General Settings *********************
-/** Target on which we want to build MOPS library (Linux/RTnode). */
-#define TARGET_DEVICE Linux
-/** Maximal number of connected local processes to broker. */
-#define MAX_PROCES_CONNECTION 100
-/** Maximal length of message broker<->process. */
-#define MAX_QUEUE_MESSAGE_SIZE 100
-/** Maximal amount of messages stored in queues broker<->process. */
-#define MAX_QUEUE_MESSAGE_NUMBER 10
-//***************** General Settings *********************
-
-//***************MOPS - RTnet Settings********************
-/** MOPS protocol port. */
-#define MOPS_PORT 1525
-/** Size of send/receive buffers. */
-#define UDP_MAX_SIZE 512
-
-/** Broadcast address. */
-#define IPADDR     "10.255.255.255"
-/** Maximal length of MOPS topic name (max is 2^16-1).*/
-#define MAX_TOPIC_LENGTH             30
-/** Maximal length of MOPS message (max is 2^16-1).*/
-#define MAX_MESSAGE_LENGTH			 100
-/** Maximal number of different topic names (max is 2^16-1).*/
-#define MAX_NUMBER_OF_TOPIC          100
-/** Maximal number of different subscriptions (max is 2^16-1).*/
-#define MAX_NUMBER_OF_SUBSCRIPTIONS  100
-//***************MOPS - RTnet Settings********************
-
-
+#include "MOPS_config.h"
 #include "MQTT.h"
 #include "MOPS_Linux.h"
 
@@ -176,8 +141,10 @@ void MoveWaitingToFinal();
 void u16ToMSBandLSB(uint16_t u16bit, uint8_t *MSB, uint8_t *LSB);
 uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB);
 void lockMemoryInit(void);
-int waitOnTDMASync(void);
+uint8_t waitOnTDMASync(void);
+uint8_t targetDependentInit(void);
 void startRandomGenrator(void);
+
 // ***************   Tools functions   ******************************//
 
 // *************** Global variables for local processes *************** //

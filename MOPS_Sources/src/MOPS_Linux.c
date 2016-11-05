@@ -1,5 +1,5 @@
 /**
- *	@file	MOPS.c
+ *	@file	MOPS_Linux.c
  *	@date	Jan 30, 2016
  *	@author	Michal Oleszczyk
  *	@brief	File containing functions responsible for
@@ -311,11 +311,22 @@ void lockMemoryInit(){
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 }
 
-int waitOnTDMASync(){
-	return rt_dev_ioctl(TDMA_Dev, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC);
+uint8_t waitOnTDMASync(){
+	if(0 == rt_dev_ioctl(TDMA_Dev, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC)){
+		return 1;
+	}
+	return 0;
 }
-// ***************   Funtions for MOPS broker   ***************//
 
+uint8_t targetDependentInit(void){
+	TDMA_Dev = rt_dev_open("TDMA0", O_RDWR);
+	
+	if(TDMA_Dev>0){
+		return 1;
+	}
+
+	return 0;
+}
 
 void startRandomGenrator(void){
 	srand(time(NULL));

@@ -15,15 +15,8 @@
 #include "MQTTConf.h"
 
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-
-#if TARGET_DEVICE == RTnode
 #include <strings.h>
-#include <timers.h>
-#endif //TARGET_DEVICE == RTnode
-
+#include <time.h>
 
 /**
  * @brief Initialization for fixed header of MQTT frame part.

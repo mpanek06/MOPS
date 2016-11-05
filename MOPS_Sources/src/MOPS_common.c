@@ -1,5 +1,5 @@
 /**
- *	@file	MOPS.c
+ *	@file	MOPS_common.c
  *	@date	Jan 30, 2016
  *	@author	Michal Oleszczyk
  *	@brief	File containing functions responsible for
@@ -313,27 +313,17 @@ void threadRecvFromRTnet() {
  */
 void threadSendToRTnet() {
 	uint8_t are_local_topics = 0;
-	int waitOnTDMASync_ERR = 0;
+	uint8_t TDMASyncOK = 0;
 
-#if TARGET_DEVICE == RTnode
-	output_buffer = pvRTnetGetUdpDataBuffer(UDP_MAX_SIZE);
-#endif //TARGET_DEVICE == RTnode
-
-#if TARGET_DEVICE == Linux
-	// Open tdma device
-	//TODO
-	TDMA_Dev = rt_dev_open("TDMA0", O_RDWR);
-#endif //TARGET_DEVICE == Linux
-
-	if (TDMA_Dev < 0)
-		return;
+	if (0 == targetDependentInit()){
+ 		return;
+	}
 
 	for (;;) {
-	    
-	    waitOnTDMASync_ERR = waitOnTDMASync();
+	    TDMASyncOK = waitOnTDMASync();
 
-		if (waitOnTDMASync_ERR){
-			printf("Failed to issue RTMAC_RTIOC_WAITONCYCLE, err=%d\n", waitOnTDMASync_ERR);
+		if (!TDMASyncOK){
+			printf("waitOnTDMASync error\n\r");
 			continue;
 		}
 			switch (MOPS_State) {
