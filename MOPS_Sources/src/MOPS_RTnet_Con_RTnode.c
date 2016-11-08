@@ -88,7 +88,7 @@ void connectToRTnet(){
 
 	if (xRTnetBind(get_sock, &rec_addr, sizeof(rec_addr)) != 0)
 		vTaskSuspend(NULL);
-	rtprintf("Podlaczony, niby\r\n");
+	rtprintf("Connection with RTnet established\r\n");
 }
 
 /**
