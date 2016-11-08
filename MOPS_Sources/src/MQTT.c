@@ -295,6 +295,49 @@ uint16_t BuildClientPublishMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topi
 }
 
 /**
+ * @brief Preparing "Advertise Packet". This is not part of MQTT itself.
+ * @param[out] Buffer Buffer into which built message will be written.
+ * @param[in] BufferLen Maximum length of given buffer.
+ * @param[in] Topic String containing topic name
+ * @return Length of applied bytes into given buffer.
+ */
+uint16_t BuildClientAdvertiseMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topic){
+	FixedHeader FHeader;
+	PublishVariableHeader PVHeader;
+	uint8_t MSB_temp, LSB_temp, Flags = 0;
+	int tempLen = 0, index = 0;
+
+	//Check if all data can be stored in Message buffer
+	tempLen += sizeof(FHeader) + 2 + strlen((char*)Topic) + 2;
+	if (tempLen > BufferLen)
+		return 0;
+	tempLen = 0;
+	//**************************************************
+
+	Init_FixedHeader(&FHeader, ADVERTISE, Flags);
+	Init_TopicName(&PVHeader.PName, Topic);
+
+	PVHeader.MSB_PacketIdentifier = 0;
+	PVHeader.LSB_PacketIdentifier = 0;
+
+	index = sizeof(FHeader);
+	tempLen = (PVHeader.PName.MSB_Length<<8) + PVHeader.PName.LSB_Length;
+	Buffer[ index ] = PVHeader.PName.MSB_Length;
+	Buffer[index+1] = PVHeader.PName.LSB_Length;
+	index+=2;
+	memcpy(Buffer + index, PVHeader.PName.Topic, tempLen);
+	index += tempLen;
+
+	u16ToMSBandLSB(index-sizeof(FixedHeader), &MSB_temp, &LSB_temp);
+	FHeader.RemainingLengthMSB = MSB_temp;
+	FHeader.RemainingLengthLSB = LSB_temp;
+	memcpy(Buffer, &FHeader, sizeof(FHeader));
+
+	return (uint16_t) index;
+}
+
+
+/**
  * @brief Preparing "Publish Acknowledgment message" of MQTT protocol.
  * @param[out] Buffer Buffer into which built message will be written.
  * @param[in] BufferLen Maximum length of given buffer.

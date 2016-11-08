@@ -15,7 +15,7 @@
 #include <mqueue.h>
 #include <string.h>
 /** Name of general queue (processes->broker). */
-#define QUEUE_NAME "/MOPS_path"
+#define QUEUE_NAME "/MOPS_path1e11"
 
 /**
  * @struct MOPS_Queue
@@ -45,5 +45,5 @@ pthread_mutex_t waiting_output_lock;	/**< mutex for blocking access to #waiting_
 pthread_mutex_t	waiting_input_lock;		/**< mutex for blocking access to #waiting_input_buffer. */
 
 extern int TDMA_Dev;
-
+extern mqd_t mq_listener;
 #endif /* MOPS_LINUX_H_ */

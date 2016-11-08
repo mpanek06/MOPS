@@ -34,6 +34,7 @@
 
 // *************** Global variables for MOPS broker *************** //
 static MOPS_Queue proc_mops_queue;
+mqd_t mq_listener;
 // ***************   Funtions for local processes   ***************//
 
 /**
@@ -153,7 +154,7 @@ int AddToMOPSQueue(int MOPS_Proces_fd, int Proces_MOPS_fd) {
  * @post This is blocking function (never ending loop)!
  */
 void InitProcesConnection() {
-	mqd_t mq_listener, new_mq_Proces_MOPS;
+	mqd_t new_mq_Proces_MOPS;
 	struct mq_attr attr;
 	struct timeval tv;
 	int fdmax, rv, i;
@@ -167,10 +168,22 @@ void InitProcesConnection() {
 	attr.mq_msgsize = MAX_QUEUE_MESSAGE_SIZE;
 	attr.mq_curmsgs = 0;
 
-	mq_listener = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
-	if (!((mqd_t) -1 != mq_listener))
-		perror("MQueue Open listener");
+	mq_listener = mq_open(QUEUE_NAME, O_RDONLY, 0644, &attr);
 
+	if (-1 != mq_listener) 	//there was such QUEUE before - other broker is runnning
+	{
+		printf("MQueue exists! Perhaps another broker is runnning?\n");
+		return;
+	}
+
+	mq_listener = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
+	
+	if (-1 == mq_listener)
+	{
+		perror("mq_open");
+		return;
+	}
+	
 	FD_SET(mq_listener, &master);
 	fdmax = mq_listener;
 	for (;;) {
@@ -307,8 +320,13 @@ void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue) {
 }
 
 // ***************   Tools functions   ******************************//
-void lockMemoryInit(){
+void MOPSBrokerTargetInit(){
 	mlockall(MCL_CURRENT | MCL_FUTURE);
+}
+
+int StopMOPSBroker(void){
+	mq_unlink(QUEUE_NAME);
+	return 0;
 }
 
 uint8_t waitOnTDMASync(){
@@ -318,7 +336,7 @@ uint8_t waitOnTDMASync(){
 	return 0;
 }
 
-uint8_t targetDependentInit(void){
+uint8_t RTnetConnTargetDependentInit(void){
 	TDMA_Dev = rt_dev_open("TDMA0", O_RDWR);
 	
 	if(TDMA_Dev>0){

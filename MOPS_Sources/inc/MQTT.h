@@ -172,20 +172,22 @@ typedef DummyStruct UnSubscribeVariableHeader;
  * @brief Enumerator of available MQTT message types.
  */
 enum MESSAGE_TYPE{
-	CONNECT = 1,	//!< CONNECT message type
-	CONNACK,		   //!< CONNACK message type
-	PUBLISH,		   //!< PUBLISH message type
-	PUBACK,			   //!< PUBACK message type
-	PUBREC,			   //!< PUBREC message type
-	PUBREL,			   //!< PUBREL message type
-	PUBCOMP,		   //!< PUBCOMP message type
-	SUBSCRIBE,		 //!< SUBSCRIBE message type
-	SUBACK,			   //!< SUBACK message type
-	UNSUBSCRIBE,	//!< UNSUBSCRIBE message type
-	UNSUBACK,		  //!< UNSUBACK message type
-	PINGREQ,     //!< PINGREQ message type
-	PINGRESP,    //!< PINGRESP message type
-	DISCONNECT,  //!< DISCONNECT message type
+	CONNECT = 1,	   	//CONNECT message type
+	CONNACK,		   	//CONNACK message type
+	PUBLISH,		   	//PUBLISH message type
+	PUBACK,			   	//PUBACK message type
+	PUBREC,			   	//PUBREC message type
+	PUBREL,			   	//PUBREL message type
+	PUBCOMP,		   	//PUBCOMP message type
+	SUBSCRIBE,		   	//SUBSCRIBE message type
+	SUBACK,			   	//SUBACK message type
+	UNSUBSCRIBE,	   	//UNSUBSCRIBE message type
+	UNSUBACK,		   	//UNSUBACK message type
+	PINGREQ,           	//PINGREQ message type
+	PINGRESP,          	//PINGRESP message type
+	DISCONNECT,        	//DISCONNECT message type
+	ADVERTISE,			//ADVERTISE message type (used in broker <-> process communication)	
+	ADVERTISEACK,		//ADVERTISEACK message type (used in broker <-> process communication)
 };
 
 /**
@@ -231,5 +233,8 @@ uint16_t BuildUnSubscribeMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topic
 uint16_t BuildPingReq(uint8_t *Buffer, int BufferLen);
 uint16_t BuildPingResp(uint8_t *Buffer, int BufferLen);
 uint16_t BuildDisconnect(uint8_t *Buffer, int BufferLen);
+
+//Definitions for proces <-> broker packets 
+uint16_t BuildClientAdvertiseMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topic);
 
 #endif /* MQTT_H_ */

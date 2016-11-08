@@ -98,6 +98,7 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen);
 // ***************   Funtions for local MOPS broker   ***************//
 int StartMOPSBroker();
 int StartMOPSBrokerNonBlocking();
+int StopMOPSBroker(void);
 void threadSendToRTnet();
 void threadRecvFromRTnet();
 
@@ -141,9 +142,9 @@ void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue);
 // ***************   Tools functions   ******************************//
 void u16ToMSBandLSB(uint16_t u16bit, uint8_t *MSB, uint8_t *LSB);
 uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB);
-void lockMemoryInit(void);
+void MOPSBrokerTargetInit(void);
 uint8_t waitOnTDMASync(void);
-uint8_t targetDependentInit(void);
+uint8_t RTnetConnTargetDependentInit(void);
 void startRandomGenrator(void);
 
 // ***************   Tools functions   ******************************//

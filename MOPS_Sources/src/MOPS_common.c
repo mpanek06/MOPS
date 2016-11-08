@@ -59,6 +59,25 @@ void publishMOPShdlr(char* Message, PublishHandler *self){
  * @param[in] Message Message payload.
  * @param[in] MessageLen Length of message in bytes.
  */
+PublishHandler advertiseMOPStmp(char *Topic){
+	PublishHandler publishHandler;
+	char buffer[MAX_QUEUE_MESSAGE_SIZE+1];
+	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+	uint16_t written;
+	written = BuildClientAdvertiseMessage((uint8_t*) buffer, sizeof(buffer), (uint8_t*) Topic);
+	if (sendToMOPS(buffer, written) == -1) {
+		perror("send");
+	}
+	return publishHandler;
+}
+
+/**
+ * @brief Publishing specified message under specified topic (user interface function).
+ *
+ * @param[in] Topic Message topic name (as a string).
+ * @param[in] Message Message payload.
+ * @param[in] MessageLen Length of message in bytes.
+ */
 void publishMOPS(char *Topic, char *Message, int MessageLen) {
 	char buffer[MAX_QUEUE_MESSAGE_SIZE+1];
 	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
@@ -171,7 +190,7 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
 
 // ***************   Funtions for MOPS broker   ***************//
 /**
- * @brief Function which starts MOPS broker functionalities (user interface function).
+ * @brief Function which ls MOPS broker functionalities (user interface function).
  *
  * If user want to use MOPS as his publish/subscribe protocol, this function
  * should be started firstly! This function is blocking itself in infinite loop,
@@ -181,7 +200,7 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
  * @return 0 - in case of end of main thread. This situation should never happened.
  */
 int StartMOPSBroker(void) {
-	lockMemoryInit();
+	MOPSBrokerTargetInit();
 	
 	mutex_init(&input_lock);
 	mutex_init(&output_lock);
@@ -209,7 +228,7 @@ int StartMOPSBroker(void) {
  * @return 0 - in case of end of main thread.
  */
 int StartMOPSBrokerNonBlocking(void) {
-	lockMemoryInit();
+	MOPSBrokerTargetInit();
 
 	mutex_init(&input_lock);
 	mutex_init(&output_lock);
@@ -316,7 +335,7 @@ void threadSendToRTnet() {
 	uint8_t are_local_topics = 0;
 	uint8_t TDMASyncOK = 0;
 
-	if (0 == targetDependentInit()){
+	if (0 == RTnetConnTargetDependentInit()){
  		return;
 	}
 
