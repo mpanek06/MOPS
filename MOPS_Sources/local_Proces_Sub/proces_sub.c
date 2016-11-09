@@ -6,16 +6,26 @@
 
 #include "MOPS.h"
 
+
+void clback1(char* msg){
+	printf("MSG dla tematu node_sub%s\n", msg);
+}
+
+void clback2(char* msg){
+	printf("MSG dla tematu testpub: %s\n", msg);
+}
+
 int main(void)
 {
     char array[100];
 
 	connectToMOPS();
-	subscribeOnceMOPS("node_pub", 0);
+
+	subscribeMOPS2("testpub", 0, clback2);
+	subscribeMOPS2("node_sub", 0, clback1);
 	
 	for(;;){
-		readMOPS(array, 100);
-		printf("%s\n", array);
+		readMOPS2(array, 100);
 	}
     return 0;
 }

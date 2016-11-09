@@ -32,7 +32,7 @@ uint16_t input_index = 0;			/**< Index of written bytes to #input_buffer. */
 uint16_t output_index = 0;			/**< Index of written bytes to #output_buffer. */
 uint16_t waiting_output_index = 0;	/**< Index of written bytes to #waiting_output_buffer. */
 uint16_t waiting_input_index = 0;	/*< Index of written bytes to #waiting_input_buffer. */
-
+int16_t noOfprocOwnSubs = 0;
 // ***************   Funtions for local processes   ***************//
 
 /**
@@ -109,6 +109,40 @@ void subscribeMOPS(char **TopicList, uint8_t *QosList, uint8_t NoOfTopics) {
 }
 
 /**
+ * @brief Sends to broker information with subscription of specified list of topics (user interface function).
+ *
+ * @param[in] TopicName Topics name to subscribe (string).
+ * @param[in] QosList List of required Quality of Service (for now only 0 available).
+ * @param[in] NoOfTopics Length of topics list.
+ */
+void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(char*)){
+	char buffer[MAX_QUEUE_MESSAGE_SIZE+1];
+	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+	uint16_t packetID, written;
+
+	Subscription sub;
+	sub.TopicName = TopicName;
+	sub.callBack = callBack;
+
+	uint8_t QosList[1];
+	QosList[0] = Qos;
+
+	char *TopicList[1];
+	TopicList[0] = TopicName;
+
+	written = BuildSubscribeMessage((uint8_t*) buffer, sizeof(buffer),
+			(uint8_t**) TopicList, QosList, 1, &packetID);
+
+	if (sendToMOPS(buffer, written) == -1) {
+		perror("send");
+		return;
+	}
+
+	procOwnSubs[noOfprocOwnSubs] = sub;
+	noOfprocOwnSubs++;
+}
+
+/**
  * @brief Sends to broker information with subscription of one specified topic (user interface function).
  *
  * @param[in] TopicName Topics name to subscribe (string).
@@ -158,6 +192,91 @@ int readMOPS(char *buf, uint8_t length) {
 }
 
 /**
+ * @brief Receive data from MOPS broker (user interface function).
+ *
+ * @param[out] buf Container for data received from broker.
+ * @param[in] length Define number of bytes which can be stored in buffer.
+ * @return Number of bytes actually written.
+ */
+int readMOPS2(char *buf, uint8_t length) {
+	char temp[MAX_QUEUE_MESSAGE_SIZE+1];
+	char topicName[MAX_TOPIC_LENGTH+1];
+	int t;
+	callBackFun callBack;
+
+	memset(topicName, 0, MAX_TOPIC_LENGTH+1);
+	memset(temp, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+	memset(buf, 0, length);
+
+	if ((t = recvFromMOPS(temp, MAX_QUEUE_MESSAGE_SIZE)) > 0) {
+		t = InterpretFrame2(buf, topicName, temp, t);
+		callBack = getCallBackByTopicName(topicName, (uint16_t)strlen(topicName));
+		
+		if(0 == callBack){
+			printf("Callback for topic %s not found!\n", topicName);
+			return 0;
+		}
+
+		callBack(buf);
+
+	} else {
+		if (t < 0)
+			perror("recv");
+		else
+			printf("Server closed connection\n");
+	}
+	return t;
+}
+
+/**
+ * @brief Function interprets received from MOPS broker frame and
+ * extracts pure message from that frame.
+ *
+ * @param[out] messageBuf Container for extracted message.
+ * @param[in] frameBuf Raw frame received from broker.
+ * @param[in] frameLen Length of raw frame.
+ */
+int InterpretFrame2(char *messageBuf, char *topicName, char *frameBuf, uint8_t frameLen) {
+	FixedHeader FHeader;
+	uint8_t Qos, topicLen, messsageLen;
+	uint16_t headLen = 0, index = 3;
+
+	memset(topicName, 0, MAX_TOPIC_LENGTH+1);
+
+	headLen = sizeof(FHeader);
+	memcpy(&FHeader, frameBuf, headLen);
+	Qos = (FHeader.Flags & 6) >> 1;
+
+	topicLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);
+	
+	index += 2;
+
+	memcpy(topicName, frameBuf+index, topicLen);
+
+	index += topicLen;
+
+	if (Qos > 0)
+		index += 2;
+	messsageLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);
+	index += 2;
+	if ((index + messsageLen) <= frameLen) {
+		memcpy(messageBuf, frameBuf + index, messsageLen);
+		return messsageLen;
+	}
+	return 0;
+}
+
+callBackFun getCallBackByTopicName(char *TopicName, uint16_t topicLen){
+	int i = 0;
+	for (i = 0; i < noOfprocOwnSubs; ++i) {
+		if (strncmp((char*) procOwnSubs[i].TopicName, TopicName, topicLen) == 0) {
+			return procOwnSubs[i].callBack;
+		}
+	}
+	return 0;
+}
+
+/**
  * @brief Function interprets received from MOPS broker frame and
  * extracts pure message from that frame.
  *
@@ -170,12 +289,23 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
 	uint8_t Qos, topicLen, messsageLen;
 	uint16_t headLen = 0, index = 3;
 
+	char topifBuffTmp[MAX_TOPIC_LENGTH+1];
+	memset(topifBuffTmp, 0, MAX_TOPIC_LENGTH+1);
+
 	headLen = sizeof(FHeader);
 	memcpy(&FHeader, frameBuf, headLen);
 	Qos = (FHeader.Flags & 6) >> 1;
 
 	topicLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);
-	index += (2 + topicLen);
+	
+	index += 2;
+
+	memcpy(topifBuffTmp, frameBuf+index, topicLen);
+	
+	printf("Sub dostal info na topic: %s\n", topifBuffTmp);
+
+	index += topicLen;
+
 	if (Qos > 0)
 		index += 2;
 	messsageLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);

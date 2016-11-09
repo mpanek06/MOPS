@@ -10,7 +10,7 @@ int main(void)
 {
 	connectToMOPS();
 
-	PublishHandler pub = advertiseMOPS("node_sub");
+	PublishHandler pub = advertiseMOPS("testpub");
 	
 	for(;;){
 		usleep(300000);

@@ -67,6 +67,21 @@ typedef struct PublishHandler {
 	void (*publish)();
 } PublishHandler;
 
+typedef void (*callBackFun)(char*);
+
+/**
+ * @struct Subscription
+ * @brief Keeps pairs <Topic+callBack>
+ *
+ * This type is used to keep topics and their callbacks in process.
+ */
+typedef struct Subscription {
+	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
+	char *TopicName;
+	/** Pointer to publishing finction. */
+	callBackFun callBack;
+} Subscription;
+
 
 /**
  * @enum MOPS_STATE
@@ -90,9 +105,13 @@ void publishMOPShdlr(char* Message, PublishHandler *self);
 PublishHandler advertiseMOPS(char *Topic);
 void publishMOPS(char *Topic, char *Message, int MessageLen);
 void subscribeOnceMOPS(char *TopicName, uint8_t Qos);
+void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(char*));
 void subscribeMOPS(char **TopicName, uint8_t *QosList, uint8_t NoOfTopics);
 int readMOPS(char *buf, uint8_t length);
+int readMOPS2(char *buf, uint8_t length);
 int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen);
+int InterpretFrame2(char *messageBuf, char *topicName, char *frameBuf, uint8_t frameLen);
+callBackFun getCallBackByTopicName(char *TopicName, uint16_t topicLen);
 // ***************   Funtions for local processes   ***************//
 
 // ***************   Funtions for local MOPS broker   ***************//
@@ -170,6 +189,7 @@ extern uint16_t waiting_input_index;	/*< Index of written bytes to #waiting_inpu
 TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs. ID=0 is for candidates.*/
 SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
 MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
+Subscription procOwnSubs[MAX_NUMBER_OF_SUBSCRIPTIONS];
 // *************** Global variables for MOPS broker *************** //
 
 #endif /* MOPS_H_ */
