@@ -347,6 +347,9 @@ uint8_t RTnetConnTargetDependentInit(void){
 }
 
 void startRandomGenrator(void){
-	srand(time(NULL));
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	
+	srand(tv.tv_usec);
 }
 // ***************   Tools functions   ******************************//
