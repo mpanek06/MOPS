@@ -8,7 +8,7 @@
 
 
 void clback1(char* msg){
-	printf("MSG dla tematu node_sub%s\n", msg);
+	printf("MSG dla tematu node_sub: %s\n", msg);
 }
 
 void clback2(char* msg){
@@ -27,5 +27,6 @@ int main(void)
 	for(;;){
 		readMOPS2(array, 100);
 	}
+	
     return 0;
 }

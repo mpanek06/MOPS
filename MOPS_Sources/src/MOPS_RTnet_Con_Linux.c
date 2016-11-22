@@ -116,7 +116,7 @@ pthread_t startNewThread(void *(*start_routine) (void *), void *arg){
 }
 
 /**
- * @brief Initiation o mutex.
+ * @brief Initiation of mutex.
  * @param lock Pointer to mutex we want to be initiated.
  * @return 1 if initiation failed, 0 if everything goes fine.
  *
@@ -149,6 +149,21 @@ void lock_mutex(pthread_mutex_t *lock){
  */
 void unlock_mutex(pthread_mutex_t *lock){
 	pthread_mutex_unlock(lock);
+}
+
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+uint8_t semaphore_init(sem_t *sem){
+    if (sem_init(sem, 0, 0) == -1)
+    {
+        printf("\n sem_init failed\n");
+        return -1;
+    }
+    return 0;
 }
 
 //*********************************************************************

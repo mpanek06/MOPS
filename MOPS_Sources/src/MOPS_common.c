@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
@@ -302,8 +303,6 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
 
 	memcpy(topifBuffTmp, frameBuf+index, topicLen);
 	
-	printf("Sub dostal info na topic: %s\n", topifBuffTmp);
-
 	index += topicLen;
 
 	if (Qos > 0)
@@ -337,12 +336,19 @@ int StartMOPSBroker(void) {
 	mutex_init(&waiting_output_lock);
 	mutex_init(&waiting_input_lock);
 
+	// if (sem_init(&sem, 0, 0) == -1)
+	// {
+ //        perror("sem_init");
+	// }
+	semaphore_init(&sem);
+
 	InitTopicList(list);
 	MOPS_QueueInit(mops_queue);
 	SubListInit(sub_list);
 	connectToRTnet();
 	startNewThread((void*) &threadSendToRTnet, NULL);
 	startNewThread((void*) &threadRecvFromRTnet, NULL);
+	startNewThread((void*) &ServeSendingToProcesses, NULL);
 	InitProcesConnection();
 	return 0;
 }
@@ -371,6 +377,7 @@ int StartMOPSBrokerNonBlocking(void) {
 	connectToRTnet();
 	startNewThread((void*) &threadSendToRTnet, NULL);
 	startNewThread((void*) &threadRecvFromRTnet, NULL);
+	startNewThread((void*) &ServeSendingToProcesses, NULL);
 	startNewThread((void*) &InitProcesConnection, NULL);
 
 	return 0;
@@ -911,6 +918,12 @@ void AnalyzeIncomingUDP(uint8_t *Buffer, int written_bytes) {
 		memmove(waiting_input_buffer + waiting_input_index,
 				Buffer + MOPSMessageLen, written_bytes - MOPSMessageLen);
 		waiting_input_index += (written_bytes - MOPSMessageLen);
+		
+		if(waiting_input_index>0)
+		{
+			sem_post(&sem);
+		}
+
 	}
 	unlock_mutex(&waiting_input_lock);
 }
@@ -973,28 +986,39 @@ int ServeSendingToProcesses() {
 	FixedHeader FHeader;
 	memset(tempBuffer, 0, UDP_MAX_SIZE);
 
-	lock_mutex(&waiting_input_lock);
-	if (waiting_input_index > 0) {
-		written_bytes = waiting_input_index;
-		memcpy(tempBuffer, waiting_input_buffer, waiting_input_index);
-		memset(waiting_input_buffer, 0, UDP_MAX_SIZE);
-		waiting_input_index = 0;
-	}
-	unlock_mutex(&waiting_input_lock);
+	while (1){
 
-	if (written_bytes > 0) {
-		HeadLen = sizeof(FHeader);
-		memcpy(&FHeader, tempBuffer + FrameLen, HeadLen);
-		FrameLen += MSBandLSBTou16(FHeader.RemainingLengthMSB,
-				FHeader.RemainingLengthLSB) + HeadLen;
+		FrameLen = 0; 
+		OldFrameLen = 0; 
+		written_bytes = 0;
+		memset(tempBuffer, 0, UDP_MAX_SIZE);
 
-		while (FHeader.MessageType != 0 && FrameLen <= written_bytes)
+		if(0 == sem_wait(&sem))
 		{
-			PrepareFrameToSendToProcess(tempBuffer + OldFrameLen, FrameLen - OldFrameLen);
-			memcpy(&FHeader, tempBuffer + FrameLen, HeadLen);
-			OldFrameLen = FrameLen;
-			FrameLen += MSBandLSBTou16(FHeader.RemainingLengthMSB,
-					FHeader.RemainingLengthLSB) + HeadLen;
+			lock_mutex(&waiting_input_lock);
+			if (waiting_input_index > 0) {
+				written_bytes = waiting_input_index;
+				memcpy(tempBuffer, waiting_input_buffer, waiting_input_index);
+				memset(waiting_input_buffer, 0, UDP_MAX_SIZE);
+				waiting_input_index = 0;
+			}
+			unlock_mutex(&waiting_input_lock);
+			
+			if (written_bytes > 0) {
+				HeadLen = sizeof(FHeader);
+				memcpy(&FHeader, tempBuffer + FrameLen, HeadLen);
+				FrameLen += MSBandLSBTou16(FHeader.RemainingLengthMSB,
+						FHeader.RemainingLengthLSB) + HeadLen;
+			
+				while (FHeader.MessageType != 0 && FrameLen <= written_bytes)
+				{
+					PrepareFrameToSendToProcess(tempBuffer + OldFrameLen, FrameLen - OldFrameLen);
+					memcpy(&FHeader, tempBuffer + FrameLen, HeadLen);
+					OldFrameLen = FrameLen;
+					FrameLen += MSBandLSBTou16(FHeader.RemainingLengthMSB,
+							FHeader.RemainingLengthLSB) + HeadLen;
+				}
+			}
 		}
 	}
 	return 0;
@@ -1142,7 +1166,6 @@ void ServePublishMessage(uint8_t *buffer, int FrameLen) {
 	uint16_t TopicLen, index = 0, tempTopicLength;
 	int topicID;
 	memset(topicTemp, 0, MAX_TOPIC_LENGTH + 1);
-
 	index += 3;
 	TopicLen = MSBandLSBTou16(buffer[index], buffer[index + 1]);
 	index += 2;

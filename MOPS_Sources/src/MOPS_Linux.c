@@ -18,6 +18,7 @@
 #include <mqueue.h>
 #include <sys/mman.h>
 #include <time.h>
+#include <semaphore.h>
 
 #include <stdint.h>
 #include <unistd.h>
@@ -156,7 +157,6 @@ int AddToMOPSQueue(int MOPS_Proces_fd, int Proces_MOPS_fd) {
 void InitProcesConnection() {
 	mqd_t new_mq_Proces_MOPS;
 	struct mq_attr attr;
-	struct timeval tv;
 	int fdmax, rv, i;
 	fd_set master, read_fd; //master fd list, temp fd list for select()
 	FD_ZERO(&master);
@@ -187,10 +187,8 @@ void InitProcesConnection() {
 	FD_SET(mq_listener, &master);
 	fdmax = mq_listener;
 	for (;;) {
-		tv.tv_sec = 0;
-		tv.tv_usec = 1;
 		read_fd = master;
-		rv = select(fdmax + 1, &read_fd, NULL, NULL, &tv);
+		rv = select(fdmax + 1, &read_fd, NULL, NULL, NULL);
 		if (rv > 0) { // there are file descriptors to serve
 			for (i = 0; i <= fdmax; i++) {
 				if (FD_ISSET(i, &read_fd)) {
@@ -205,10 +203,9 @@ void InitProcesConnection() {
 				}
 			}
 		}
+		
 		if (rv < 0) // error occurred in select()
 			perror("select");
-		if (rv == 0) // timeout, we can do our things
-			ServeSendingToProcesses();
 	}
 }
 
@@ -293,7 +290,7 @@ int ServeNewProcessConnection(fd_set *set, int listener_fd) {
 
 		if (AddToMOPSQueue(new_mq_MOPS_Proces, new_mq_Proces_MOPS) >= 0) {
 			FD_SET(new_mq_Proces_MOPS, set);
-			//printf("Nowy deskryptor: %d, nazwa kolejki: %s \n", new_mq_Proces_MOPS, buffer);
+			// printf("Nowy deskryptor: %d, nazwa kolejki: %s \n", new_mq_Proces_MOPS, buffer);
 			return new_mq_Proces_MOPS;
 		}
 	}

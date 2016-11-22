@@ -19,5 +19,6 @@ pthread_t startNewThread(void *(*start_routine) (void *), void *arg);
 uint8_t mutex_init(pthread_mutex_t *lock);
 void lock_mutex(pthread_mutex_t *lock);
 void unlock_mutex(pthread_mutex_t *lock);
+uint8_t semaphore_init(sem_t *sem);
 
 #endif /* MOPS_RTNET_CON_LINUX_H_ */

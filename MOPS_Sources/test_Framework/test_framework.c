@@ -122,7 +122,7 @@ void *PubFun()
 			pub.publish(buff, &pub);
 			sentTime = getCurrentTimeNs();
 			insertFirst(&sent, i, sentTime);
-			printf("dodane: %lld \n", sent->timestamp );
+			// printf("dodane: %lld \n", sent->timestamp );
 			++noOfSentData;
 			usleep(INTERVAL);
 		}
@@ -157,7 +157,7 @@ int main(void)
     	{
 			printf("\nEnd of test\n");
 			endPub = true;
-			usleep(INTERVAL*40);
+			usleep(INTERVAL*80);
 			endSub = true;
 			printStats();
 			// 

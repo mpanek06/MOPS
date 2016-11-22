@@ -8,7 +8,10 @@
 
 int main(void)
 {
-	connectToMOPS();
+	if(connectToMOPS() != 0)
+	{
+		return -1;
+	}
 
 	PublishHandler pub = advertiseMOPS("testpub");
 	
