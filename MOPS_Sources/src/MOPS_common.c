@@ -116,7 +116,7 @@ void subscribeMOPS(char **TopicList, uint8_t *QosList, uint8_t NoOfTopics) {
  * @param[in] QosList List of required Quality of Service (for now only 0 available).
  * @param[in] NoOfTopics Length of topics list.
  */
-void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(char*)){
+void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(void*)){
 	char buffer[MAX_QUEUE_MESSAGE_SIZE+1];
 	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
 	uint16_t packetID, written;

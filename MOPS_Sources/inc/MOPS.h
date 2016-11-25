@@ -68,7 +68,7 @@ typedef struct PublishHandler {
 	void (*publish)();
 } PublishHandler;
 
-typedef void (*callBackFun)(char*);
+typedef void (*callBackFun)(void*);
 
 /**
  * @struct Subscription
@@ -106,7 +106,7 @@ void publishMOPShdlr(char* Message, PublishHandler *self);
 PublishHandler advertiseMOPS(char *Topic);
 void publishMOPS(char *Topic, char *Message, int MessageLen);
 void subscribeOnceMOPS(char *TopicName, uint8_t Qos);
-void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(char*));
+void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(void*));
 void subscribeMOPS(char **TopicName, uint8_t *QosList, uint8_t NoOfTopics);
 int readMOPS(char *buf, uint8_t length);
 int readMOPS2(char *buf, uint8_t length);

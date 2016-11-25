@@ -7,12 +7,14 @@
 #include "MOPS.h"
 
 
-void clback1(char* msg){
-	printf("MSG dla tematu node_sub: %s\n", msg);
+void clback1(void* msg){
+	char *data = (char*) msg;
+	printf("MSG dla tematu node_sub: %s\n", data);
 }
 
-void clback2(char* msg){
-	printf("MSG dla tematu testpub: %s\n", msg);
+void clback2(void* msg){
+	char *data = (char*) msg;
+	printf("MSG dla tematu testpub: %s\n", data);
 }
 
 int main(void)
