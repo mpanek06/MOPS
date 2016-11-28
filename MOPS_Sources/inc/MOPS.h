@@ -14,7 +14,6 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <semaphore.h>
 #include <sys/types.h>
 #include "MOPS_config.h"
 #include "MQTT.h"
@@ -182,8 +181,6 @@ uint8_t waiting_output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for incoming data from
 											 	* (waiting for sending them to RTnet). */
 uint8_t waiting_input_buffer[UDP_MAX_SIZE];  	/**< Buffer for outgoing data to processes
 											 	* (waiting for sending them to processes). */
-
-sem_t sem;
 
 extern uint16_t input_index;			/**< Index of written bytes to #input_buffer. */
 extern uint16_t output_index;			/**< Index of written bytes to #output_buffer. */

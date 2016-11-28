@@ -20,5 +20,7 @@ uint8_t mutex_init(SemaphoreHandle_t *lock);
 void lock_mutex(SemaphoreHandle_t *lock);
 void unlock_mutex(SemaphoreHandle_t *lock);
 
-uint8_t semaphore_init(SemaphoreHandle_t *lock);
+uint8_t semaphore_init(SemaphoreHandle_t *sem);
+void semaphore_give(SemaphoreHandle_t *sem);
+uint8_t semaphore_take(SemaphoreHandle_t *sem);
 #endif /* MOPS_RTNET_CON_RTNODE_H_ */

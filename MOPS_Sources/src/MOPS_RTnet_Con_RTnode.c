@@ -163,3 +163,39 @@ void lock_mutex(SemaphoreHandle_t *lock){
 void unlock_mutex(SemaphoreHandle_t *lock){
 	xSemaphoreGive( *lock );
 }
+
+
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+uint8_t semaphore_init(SemaphoreHandle_t *sem){
+    if (*sem = xSemaphoreCreateBinary())
+    {
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+void semaphore_give(SemaphoreHandle_t *sem){
+    xSemaphoreGive(*sem);
+}
+
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+uint8_t semaphore_take(SemaphoreHandle_t *sem){
+    while( xSemaphoreTake( *sem, ( TickType_t ) 30 ) != pdTRUE ){}
+    return 0;
+}

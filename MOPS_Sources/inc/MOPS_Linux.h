@@ -13,9 +13,10 @@
 #define MOPS_LINUX_H_
 
 #include <mqueue.h>
+#include <semaphore.h>
 #include <string.h>
 /** Name of general queue (processes->broker). */
-#define QUEUE_NAME "/MOPS_path1e11"
+#define QUEUE_NAME "/MOPS_path"
 
 /**
  * @struct MOPS_Queue
@@ -38,11 +39,13 @@ typedef struct MOPS_Queue {
 uint8_t output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for sending data to RTnet. */
 
 int ServeNewProcessConnection(fd_set *set, int listener_fd);
+ 
+pthread_mutex_t output_lock; 			/* mutex for blocking access to #output_buffer.           */
+pthread_mutex_t input_lock; 			/* mutex for blocking access to #input_buffer.            */
+pthread_mutex_t waiting_output_lock;	/* mutex for blocking access to #waiting_output_buffer.   */
+pthread_mutex_t	waiting_input_lock;		/* mutex for blocking access to #waiting_input_buffer.    */
 
-pthread_mutex_t output_lock; 			/**< mutex for blocking access to #output_buffer. */
-pthread_mutex_t input_lock; 			/**< mutex for blocking access to #input_buffer. */
-pthread_mutex_t waiting_output_lock;	/**< mutex for blocking access to #waiting_output_buffer. */
-pthread_mutex_t	waiting_input_lock;		/**< mutex for blocking access to #waiting_input_buffer. */
+sem_t sem;								/* semaphore giving access to data received from RTnet.   */
 
 extern int TDMA_Dev;
 extern mqd_t mq_listener;

@@ -374,10 +374,6 @@ int StartMOPSBroker(void) {
 	mutex_init(&waiting_output_lock);
 	mutex_init(&waiting_input_lock);
 
-	// if (sem_init(&sem, 0, 0) == -1)
-	// {
- //        perror("sem_init");
-	// }
 	semaphore_init(&sem);
 
 	InitTopicList(list);
@@ -959,7 +955,7 @@ void AnalyzeIncomingUDP(uint8_t *Buffer, int written_bytes) {
 		
 		if(waiting_input_index>0)
 		{
-			sem_post(&sem);
+			semaphore_give(&sem);
 		}
 
 	}
@@ -1031,7 +1027,7 @@ int ServeSendingToProcesses() {
 		written_bytes = 0;
 		memset(tempBuffer, 0, UDP_MAX_SIZE);
 
-		if(0 == sem_wait(&sem))
+		if(0 == semaphore_take(&sem))
 		{
 			lock_mutex(&waiting_input_lock);
 			if (waiting_input_index > 0) {

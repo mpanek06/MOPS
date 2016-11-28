@@ -166,4 +166,24 @@ uint8_t semaphore_init(sem_t *sem){
     return 0;
 }
 
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+void semaphore_give(sem_t *sem){
+    sem_post(sem);
+}
+
+/**
+ * @brief Initialization of semaphore.
+ * @param sem Pointer to semaphore that should be initialized.
+ * @return -1 if Initialization failed, 0 if everything goes fine.
+ *
+ */
+uint8_t semaphore_take(sem_t *sem){
+    return sem_wait(sem);
+}
+
 //*********************************************************************
