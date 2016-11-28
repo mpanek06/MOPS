@@ -30,13 +30,13 @@ typedef struct MOPS_Queue {
 } MOPS_Queue;
 
 QueueHandle_t ServeNewProcessConnection();
-uint8_t *output_buffer;				/* Buffer for sending data to RTnet. 					  */
+uint8_t *output_buffer;				/* Buffer for sending data to RTnet.                          */
 
-SemaphoreHandle_t output_lock;			/* mutex for blocking access to #output_buffer. 		  */
+SemaphoreHandle_t output_lock;			/* mutex for blocking access to #output_buffer.           */
 SemaphoreHandle_t input_lock;			/* mutex for blocking access to #input_buffer.            */
 SemaphoreHandle_t waiting_output_lock;	/* mutex for blocking access to #waiting_output_buffer.   */
 SemaphoreHandle_t waiting_input_lock;	/* mutex for blocking access to #waiting_input_buffer.    */
 
-SemaphoreHandle_t xSemaphore;			/* semaphore giving access to data received from RTnet.   */
+SemaphoreHandle_t sem;                  /* semaphore giving access to data received from RTnet.   */
 
 #endif /* MOPS_RTNODE_H_ */

@@ -211,7 +211,7 @@ int readMOPS2(char *buf, uint8_t length) {
 	if ((t = recvFromMOPS(temp, MAX_QUEUE_MESSAGE_SIZE)) > 0) {
 		t = InterpretFrame2(buf, topicName, temp, t);
 		callBack = getCallBackByTopicName(topicName, (uint16_t)strlen(topicName));
-		
+
 		if(0 == callBack){
 			printf("Callback for topic %s not found!\n", topicName);
 			return 0;
@@ -249,7 +249,7 @@ int spinMOPS(){
 		if ((t = recvFromMOPS(temp, MAX_QUEUE_MESSAGE_SIZE)) > 0) {
 			t = InterpretFrame2(buf, topicName, temp, t);
 			callBack = getCallBackByTopicName(topicName, (uint16_t)strlen(topicName));
-			
+
 			if(0 == callBack){
 				printf("Callback for topic %s not found!\n", topicName);
 				return 0;
@@ -286,7 +286,7 @@ int InterpretFrame2(char *messageBuf, char *topicName, char *frameBuf, uint8_t f
 	Qos = (FHeader.Flags & 6) >> 1;
 
 	topicLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);
-	
+
 	index += 2;
 
 	memcpy(topicName, frameBuf+index, topicLen);
@@ -335,11 +335,11 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
 	Qos = (FHeader.Flags & 6) >> 1;
 
 	topicLen = MSBandLSBTou16(frameBuf[index], frameBuf[index + 1]);
-	
+
 	index += 2;
 
 	memcpy(topifBuffTmp, frameBuf+index, topicLen);
-	
+
 	index += topicLen;
 
 	if (Qos > 0)
@@ -348,6 +348,7 @@ int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen) {
 	index += 2;
 	if ((index + messsageLen) <= frameLen) {
 		memcpy(messageBuf, frameBuf + index, messsageLen);
+
 		return messsageLen;
 	}
 	return 0;
@@ -951,7 +952,7 @@ void AnalyzeIncomingUDP(uint8_t *Buffer, int written_bytes) {
 		memmove(waiting_input_buffer + waiting_input_index,
 				Buffer + MOPSMessageLen, written_bytes - MOPSMessageLen);
 		waiting_input_index += (written_bytes - MOPSMessageLen);
-		
+
 		if(waiting_input_index>0)
 		{
 			semaphore_give(&sem);
@@ -1021,8 +1022,8 @@ int ServeSendingToProcesses() {
 
 	while (1){
 
-		FrameLen = 0; 
-		OldFrameLen = 0; 
+		FrameLen = 0;
+		OldFrameLen = 0;
 		written_bytes = 0;
 		memset(tempBuffer, 0, UDP_MAX_SIZE);
 
@@ -1036,13 +1037,13 @@ int ServeSendingToProcesses() {
 				waiting_input_index = 0;
 			}
 			unlock_mutex(&waiting_input_lock);
-			
+
 			if (written_bytes > 0) {
 				HeadLen = sizeof(FHeader);
 				memcpy(&FHeader, tempBuffer + FrameLen, HeadLen);
 				FrameLen += MSBandLSBTou16(FHeader.RemainingLengthMSB,
 						FHeader.RemainingLengthLSB) + HeadLen;
-			
+
 				while (FHeader.MessageType != 0 && FrameLen <= written_bytes)
 				{
 					PrepareFrameToSendToProcess(tempBuffer + OldFrameLen, FrameLen - OldFrameLen);
