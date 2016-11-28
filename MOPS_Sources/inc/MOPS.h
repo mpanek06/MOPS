@@ -77,7 +77,7 @@ typedef void (*callBackFun)(void*);
  */
 typedef struct Subscription {
 	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
-	char *TopicName;
+	char TopicName[MAX_TOPIC_LENGTH+1];
 	/** Pointer to publishing finction. */
 	callBackFun callBack;
 } Subscription;
