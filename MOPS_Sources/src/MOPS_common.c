@@ -230,6 +230,44 @@ int readMOPS2(char *buf, uint8_t length) {
 }
 
 /**
+ * @brief Receive data from MOPS broker (user interface function).
+ *
+ * @return Number of bytes actually written.
+ */
+int spinMOPS(){
+	char temp[MAX_QUEUE_MESSAGE_SIZE+1];
+	char buf[MAX_QUEUE_MESSAGE_SIZE+1];
+
+	char topicName[MAX_TOPIC_LENGTH+1];
+	int t;
+	callBackFun callBack;
+	for(;;)
+	{
+		memset(topicName, 0, MAX_TOPIC_LENGTH+1);
+		memset(temp, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+		memset(buf, 0, MAX_QUEUE_MESSAGE_SIZE+1);
+
+		if ((t = recvFromMOPS(temp, MAX_QUEUE_MESSAGE_SIZE)) > 0) {
+			t = InterpretFrame2(buf, topicName, temp, t);
+			callBack = getCallBackByTopicName(topicName, (uint16_t)strlen(topicName));
+			
+			if(0 == callBack){
+				printf("Callback for topic %s not found!\n", topicName);
+				return 0;
+			}
+
+			callBack(buf);
+
+		} else {
+			if (t < 0)
+				perror("recv");
+			else
+				printf("Server closed connection\n");
+		}
+	}
+}
+
+/**
  * @brief Function interprets received from MOPS broker frame and
  * extracts pure message from that frame.
  *

@@ -19,16 +19,16 @@ void clback2(void* msg){
 
 int main(void)
 {
-    char array[100];
-
-	connectToMOPS();
+	if(connectToMOPS())
+	{
+		printf("Error during connecting to MOPS broker!\n");
+		return -1;
+	}
 
 	subscribeMOPS2("testpub", 0, clback2);
 	subscribeMOPS2("node_sub", 0, clback1);
 	
-	for(;;){
-		readMOPS2(array, 100);
-	}
+	spinMOPS();
 	
     return 0;
 }

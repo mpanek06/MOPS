@@ -8,8 +8,9 @@
 
 int main(void)
 {
-	if(connectToMOPS() != 0)
+	if(connectToMOPS())
 	{
+		printf("Error during connecting to MOPS broker!\n");
 		return -1;
 	}
 

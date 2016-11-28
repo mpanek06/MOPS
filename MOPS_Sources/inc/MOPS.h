@@ -110,6 +110,7 @@ void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(void*));
 void subscribeMOPS(char **TopicName, uint8_t *QosList, uint8_t NoOfTopics);
 int readMOPS(char *buf, uint8_t length);
 int readMOPS2(char *buf, uint8_t length);
+int spinMOPS();
 int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen);
 int InterpretFrame2(char *messageBuf, char *topicName, char *frameBuf, uint8_t frameLen);
 callBackFun getCallBackByTopicName(char *TopicName, uint16_t topicLen);
