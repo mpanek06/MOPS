@@ -1,0 +1,4 @@
+verbose mode on!
+
+End of test
+Average time: 0.000000, Sent data: 351, Lost data: 351 Lost data(percent): 100.000000% 

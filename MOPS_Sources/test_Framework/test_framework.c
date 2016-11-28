@@ -11,9 +11,13 @@
 
 #define INTERVAL 5000
 
+int verbose = 0;
+int i = 0;
 long noOfData = 0, noOfCorruptedData = 0, noOfSentData = 0;
 double average = 0;
 long sum = 0;
+
+long interval = 0;
 
 bool endProgramSigRec = false, endPub = false, endSub = false;
 
@@ -40,6 +44,13 @@ void printStats()
 		{
 			recTime = rec_ptr->timestamp;
 			sum += (recTime-sentTime);
+
+			if(verbose)
+			{
+				printf("%lld %lld %lld \n", sentTime, recTime, recTime-sentTime);
+			}
+
+
 			++noOfData;
 			average = (double) sum / (double)noOfData;
 
@@ -56,8 +67,8 @@ void printStats()
       	sent_ptr = sent_ptr->next;
    	}
 
-   	printf("Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %f%% \n",average, noOfSentData, noOfCorruptedData, 100*((double)noOfCorruptedData/(double)noOfSentData) );
-		
+   	printf("Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %.2f%% \n",average, noOfSentData, noOfCorruptedData-1, 100*((double)(noOfCorruptedData-1)/(double)noOfSentData) );
+   	fprintf(stderr, "Average time: %f, Sent data: %ld, Lost data: %ld Lost data(percent): %.2f%% \n",average, noOfSentData, noOfCorruptedData-1, 100*((double)(noOfCorruptedData-1)/(double)noOfSentData) );	
 }
 
 
@@ -94,7 +105,6 @@ void *SubFun()
 			readMOPS(receivedData, 100);
 			recTime = getCurrentTimeNs();
 			receivedDataInt = atoi(receivedData);
-			
 			insertFirst(&received, receivedDataInt, recTime);
 		}
 	}
@@ -104,7 +114,7 @@ void *SubFun()
 void *PubFun()
 {
 	char buff[100];
-	int i = 0;
+	i = 0;
 	long sentTime = 0;
 
 	PublishHandler pub = advertiseMOPS("node_sub");
@@ -117,22 +127,78 @@ void *PubFun()
 		else
 		{
 			memset(buff, 0, sizeof(buff));
-			sprintf(buff, "%d", i++);
+			sprintf(buff, "%08d", i++);
+			
+			if(verbose)
+			{
+				printf("%s\n", buff);
+			}
 
 			pub.publish(buff, &pub);
 			sentTime = getCurrentTimeNs();
 			insertFirst(&sent, i, sentTime);
 			// printf("dodane: %lld \n", sent->timestamp );
 			++noOfSentData;
-			usleep(INTERVAL);
+			usleep(interval);
 		}
 
 	}
 	return 0;
 }
 
-int main(void)
+void *Pub2Fun()
 {
+	char buff[100];
+	i = 0;
+	long sentTime = 0;
+
+	connectToMOPS();
+	
+	for(;;)
+	{
+		if(endPub)
+			break;
+		else
+		{
+			memset(buff, 0, sizeof(buff));
+			sprintf(buff, "%08d", i++);
+			
+			if(verbose)
+			{
+				printf("%s\n", buff);
+			}
+			
+			publishMOPS(buff, buff, strlen(buff));
+			publishMOPS(buff, buff, strlen(buff));
+			
+			sentTime = getCurrentTimeNs();
+			insertFirst(&sent, i, sentTime);
+			// printf("dodane: %lld \n", sent->timestamp );
+			++noOfSentData;
+			usleep(interval);
+		}
+
+	}
+	return 0;
+}
+
+int main(int argc, char **argv)
+{
+
+	int no_of_data_to_sent;
+
+	if(argc > 1)
+	{
+		if(argv[1][0] == '-' && argv[1][1] == 'v')
+		{
+			verbose = 1;
+			printf("verbose mode on!\n");
+		}
+	}
+
+	no_of_data_to_sent = atoi(argv[2]);
+	interval = atoi(argv[3]);
+
 	pthread_mutex_init(&listLock, NULL);
 	
 	struct sigaction act;
@@ -144,14 +210,33 @@ int main(void)
 		perror ("sigaction");
 		return 1;
 	}
-	
-    if(pthread_create(&pub_thread, NULL, PubFun, NULL) || pthread_create(&sub_thread, NULL, SubFun, NULL))
-    {
-        perror("Error - pthread_create() return code:");
-        return 1;
-    }
+
+
+	if(argc > 4 && argv[4][0] == 'p')
+	{
+		printf("New topic each time mode active!\n");
+		if(pthread_create(&pub_thread, NULL, Pub2Fun, NULL) || pthread_create(&sub_thread, NULL, SubFun, NULL))
+    	{
+        	perror("Error - pthread_create() return code:");
+        	return 1;
+    	}
+
+	}
+	else 
+	{
+		if(pthread_create(&pub_thread, NULL, PubFun, NULL) || pthread_create(&sub_thread, NULL, SubFun, NULL))
+    	{
+        	perror("Error - pthread_create() return code:");
+        	return 1;
+    	}
+	}
 
     while(1){
+
+    	if(i >= no_of_data_to_sent)
+    	{
+    		endProgramSigRec = true;
+    	}
 
     	if(endProgramSigRec)
     	{

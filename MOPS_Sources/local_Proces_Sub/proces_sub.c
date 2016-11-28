@@ -17,6 +17,12 @@ void clback2(void* msg){
 	printf("MSG dla tematu testpub: %s\n", data);
 }
 
+
+void clback3(void* msg){
+	char *data = (char*) msg;
+	printf("MSG dla tematu node_pub: %s\n", data);
+}
+
 int main(void)
 {
 	if(connectToMOPS())
@@ -27,6 +33,8 @@ int main(void)
 
 	subscribeMOPS2("testpub", 0, clback2);
 	subscribeMOPS2("node_sub", 0, clback1);
+
+	subscribeMOPS2("node_pub", 0, clback3);
 	
 	spinMOPS();
 	

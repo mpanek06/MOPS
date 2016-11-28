@@ -120,10 +120,6 @@ void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(void*)){
 	memset(buffer, 0, MAX_QUEUE_MESSAGE_SIZE+1);
 	uint16_t packetID, written;
 
-	Subscription sub;
-	sub.TopicName = TopicName;
-	sub.callBack = callBack;
-
 	uint8_t QosList[1];
 	QosList[0] = Qos;
 
@@ -138,7 +134,9 @@ void subscribeMOPS2(char *TopicName, uint8_t Qos, void (*callBack)(void*)){
 		return;
 	}
 
-	procOwnSubs[noOfprocOwnSubs] = sub;
+	memcpy(procOwnSubs[noOfprocOwnSubs].TopicName , TopicName, strlen(TopicName));
+	procOwnSubs[noOfprocOwnSubs].callBack = callBack;
+
 	noOfprocOwnSubs++;
 }
 

@@ -32,9 +32,9 @@
 /** Maximal length of MOPS message (max is 2^16-1).*/
 #define MAX_MESSAGE_LENGTH			 100
 /** Maximal number of different topic names (max is 2^16-1).*/
-#define MAX_NUMBER_OF_TOPIC          100
+#define MAX_NUMBER_OF_TOPIC          5000
 /** Maximal number of different subscriptions (max is 2^16-1).*/
-#define MAX_NUMBER_OF_SUBSCRIPTIONS  100
+#define MAX_NUMBER_OF_SUBSCRIPTIONS  5000
 //***************MOPS - RTnet Settings********************
 
 #endif /* MOPSCONFIG_H_ */
