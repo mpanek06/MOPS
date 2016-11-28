@@ -17,7 +17,7 @@
 
 #include "MOPS.h"
 #include <pthread.h>
-#include "MOPS_RTnet_Con_RTnode.h"
+#include "MOPS_RTnet_Con_Linux.h"
 
 
 //**** MOPS - MOPS communication protocol ****
