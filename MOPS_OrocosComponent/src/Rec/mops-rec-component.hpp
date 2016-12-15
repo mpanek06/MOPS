@@ -28,5 +28,6 @@ class Mops_Rec : public RTT::TaskContext{
     RTT::OutputPort<MyData>  _outPort;
     
     void _addSub(std::string topic);
+    void cbFun(void* payload);
 };
 #endif

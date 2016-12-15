@@ -12,85 +12,12 @@
 #ifndef MOPS_H_
 #define MOPS_H_
 
-/** Linux target value. */
-#define Linux  1
-/** RTnode target value. */
-#define RTnode 2
-
-//***************** General Settings *********************
-/** Target on which we want to build MOPS library (Linux/RTnode). */
-#define TARGET_DEVICE Linux
-/** Maximal number of connected local processes to broker. */
-#define MAX_PROCES_CONNECTION 100
-/** Maximal length of message broker<->process. */
-#define MAX_QUEUE_MESSAGE_SIZE 100
-/** Maximal amount of messages stored in queues broker<->process. */
-#define MAX_QUEUE_MESSAGE_NUMBER 10
-//***************** General Settings *********************
-
-//***************MOPS - RTnet Settings********************
-/** MOPS protocol port. */
-#define MOPS_PORT 1525
-/** Size of send/receive buffers. */
-#define UDP_MAX_SIZE 512
-
-/** Broadcast address. */
-#define IPADDR     "10.255.255.255"
-/** Maximal length of MOPS topic name (max is 2^16-1).*/
-#define MAX_TOPIC_LENGTH             30
-/** Maximal length of MOPS message (max is 2^16-1).*/
-#define MAX_MESSAGE_LENGTH			 100
-/** Maximal number of different topic names (max is 2^16-1).*/
-#define MAX_NUMBER_OF_TOPIC          100
-/** Maximal number of different subscriptions (max is 2^16-1).*/
-#define MAX_NUMBER_OF_SUBSCRIPTIONS  100
-//***************MOPS - RTnet Settings********************
-
-#if TARGET_DEVICE == Linux
-#include <mqueue.h>
-
-/** Name of general queue (processes->broker). */
-#define QUEUE_NAME "/MOPS_path"
-
-/**
- * @struct MOPS_Queue
- * @brief Structure for connecting two file descriptors
- * responsible for broker<->process communication.
- *
- * Each new local process which wants to connect to MOPS
- * broker, create to queues with format: \{proces_id}a,
- * \{proces_id}b. First one (a) is for broker->process, second
- * one (b) is process->broker. This structure is used to build
- * 'communication list'.
- * */
-typedef struct MOPS_Queue {
-	/** File descriptor for transmission process->broker*/
-	mqd_t ProcesToMOPS_fd;
-	/** File descriptor for transmission broker->process*/
-	mqd_t MOPSToProces_fd;
-} MOPS_Queue;
-#endif //TARGET_DEVICE == Linux
-#if TARGET_DEVICE == RTnode
-#include "FreeRTOS.h"
-#include "timers.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "rtnet.h"
-#include "rtnet_inet.h"
-
-QueueHandle_t GlobalProcesMopsQueue;
-
-typedef struct MOPS_Queue {
-	QueueHandle_t ProcesToMOPS_fd;
-	QueueHandle_t MOPSToProces_fd;
-}MOPS_Queue;
-#endif //TARGET_DEVICE == RTnode
-
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include "MOPS_config.h"
 #include "MQTT.h"
+#include "MOPS_Linux.h"
 
 /**
  * @struct TopicID
@@ -127,6 +54,36 @@ typedef struct SubscriberList {
 } SubscriberList;
 
 /**
+ * @struct PublishHandler
+ * @brief Handler used for publishing
+ *
+ * This type is returned by advertising function.
+ * It contains topic name and poniter to publishing function.
+ */
+typedef struct PublishHandler {
+	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
+	char *TopicName;
+	/** Pointer to publishing finction. */
+	void (*publish)();
+} PublishHandler;
+
+typedef void (*callBackFun)(void*);
+
+/**
+ * @struct Subscription
+ * @brief Keeps pairs <Topic+callBack>
+ *
+ * This type is used to keep topics and their callbacks in process.
+ */
+typedef struct Subscription {
+	/** Topic name - at most MAX_TOPIC_LENGTH long string. */
+	char TopicName[MAX_TOPIC_LENGTH+1];
+	/** Pointer to publishing finction. */
+	callBackFun callBack;
+} Subscription;
+
+
+/**
  * @enum MOPS_STATE
  * @brief State of MOPS broker.
  *
@@ -136,7 +93,7 @@ typedef struct SubscriberList {
 enum MOPS_STATE {
 	SEND_NOTHING = 1,/**< Usual state - process as usual, receive and send messages. */
 	SEND_REQUEST,    /**< Init state - responsible for request for all known topics list. */
-	SEND_TOPIC_LIST, /**< Topics respond - set when some RTnet participant requested for full topic list.*/
+	SEND_TOPIC_LIST, /**< Topics response - set when some RTnet participant requested for full topic list.*/
 };
 
 // ***************   Funtions for local processes   ***************//
@@ -144,15 +101,19 @@ int connectToMOPS();
 int sendToMOPS(char *buffer, uint16_t buffLen);
 int recvFromMOPS(char *buffer, uint16_t buffLen);
 
+void publishMOPShdlr(char* Message, PublishHandler *self);
+PublishHandler advertiseMOPS(char *Topic);
 void publishMOPS(char *Topic, char *Message, int MessageLen);
-void subscribeMOPS(char **TopicList, uint8_t *QosList, uint8_t NoOfTopics);
-int readMOPS(char *buf, uint8_t length);
-int InterpretFrame(char *messageBuf, char *frameBuf, uint8_t frameLen);
+void subscribeMOPS(char *TopicName, uint8_t Qos, void (*callBack)(void*));
+int spinMOPS();
+int InterpretFrame(char *messageBuf, char *topicName, char *frameBuf, uint8_t frameLen);
+callBackFun getCallBackByTopicName(char *TopicName, uint16_t topicLen);
 // ***************   Funtions for local processes   ***************//
 
 // ***************   Funtions for local MOPS broker   ***************//
 int StartMOPSBroker();
 int StartMOPSBrokerNonBlocking();
+int StopMOPSBroker(void);
 void threadSendToRTnet();
 void threadRecvFromRTnet();
 
@@ -174,12 +135,6 @@ void AddTopicCandidate(uint8_t *topic, uint16_t topicLen);
 int GetIDfromTopicName(uint8_t *topic, uint16_t topicLen);
 uint16_t GetTopicNameFromID(uint16_t id, uint8_t *topic);
 void InitProcesConnection();
-#if TARGET_DEVICE == Linux
-int ServeNewProcessConnection(fd_set *set, int listener_fd);
-#endif
-#if TARGET_DEVICE == RTnode
-QueueHandle_t ServeNewProcessConnection();
-#endif
 void CloseProcessConnection(int file_de);
 int AddToMOPSQueue(int MOPS_Proces_fd, int Proces_MOPS_fd);
 void MOPS_QueueInit(MOPS_Queue *queue);
@@ -196,9 +151,41 @@ void ServeSubscribeMessage(uint8_t *buffer, int FrameLen, int ClientID);
 void AddPacketToWaitingTab(uint8_t *buffer, int FrameLen);
 void AddPacketToFinalTab(uint8_t *buffer, int FrameLen, uint16_t topicID);
 void MoveWaitingToFinal();
+void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue);
 // ***************   Funtions for local MOPS broker   ***************//
 
+// ***************   Tools functions   ******************************//
 void u16ToMSBandLSB(uint16_t u16bit, uint8_t *MSB, uint8_t *LSB);
 uint16_t MSBandLSBTou16(uint8_t MSB, uint8_t LSB);
+void MOPSBrokerTargetInit(void);
+uint8_t waitOnTDMASync(void);
+uint8_t RTnetConnTargetDependentInit(void);
+void startRandomGenrator(void);
+
+// ***************   Tools functions   ******************************//
+
+// *************** Global variables for local processes *************** //
+
+// *************** Global variables for local processes *************** //
+
+// *************** Global variables for MOPS broker *************** //
+extern uint8_t MOPS_State;
+uint8_t input_buffer[UDP_MAX_SIZE];				/**< Buffer for receiving data from RTnet. */
+
+uint8_t waiting_output_buffer[UDP_MAX_SIZE]; 	/**< Buffer for incoming data from processes
+											 	* (waiting for sending them to RTnet). */
+uint8_t waiting_input_buffer[UDP_MAX_SIZE];  	/**< Buffer for outgoing data to processes
+											 	* (waiting for sending them to processes). */
+
+extern uint16_t input_index;			/**< Index of written bytes to #input_buffer. */
+extern uint16_t output_index;			/**< Index of written bytes to #output_buffer. */
+extern uint16_t waiting_output_index;	/**< Index of written bytes to #waiting_output_buffer. */
+extern uint16_t waiting_input_index;	/*< Index of written bytes to #waiting_input_buffer. */
+
+TopicID list[MAX_NUMBER_OF_TOPIC]; /**< List of all known topics with their IDs. ID=0 is for candidates.*/
+SubscriberList sub_list[MAX_NUMBER_OF_SUBSCRIPTIONS]; /**< List of all subscribers ID and subscribed topics by them. */
+MOPS_Queue mops_queue[MAX_PROCES_CONNECTION]; /**< List of connected processes to broker. */
+Subscription procOwnSubs[MAX_NUMBER_OF_SUBSCRIPTIONS];
+// *************** Global variables for MOPS broker *************** //
 
 #endif /* MOPS_H_ */

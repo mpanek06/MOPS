@@ -56,11 +56,17 @@ bool Mops_Rec::startHook(){
   return true;
 }
 
-void Mops_Rec::updateHook(){ 
+void Mops_Rec::cbFun(void* payload)
+{
   MyData msg;
   readMOPS((char*)msg.data, MAX_MESSAGE_LENGTH);
 
+  msg.data = payload;
   _outPort.write(msg);
+}
+
+void Mops_Rec::updateHook(){ 
+  spinMOPS();
   getActivity()->trigger();
   if(_verbose)
     std::cout << "Mops_Rec executes updateHook !" <<std::endl;
@@ -79,7 +85,7 @@ void Mops_Rec::cleanupHook() {
 void Mops_Rec::_addSub(std::string topic) {
   uint8_t Qos = 0;
   const char * str = topic.c_str(); 
-  subscribeMOPS((char**)&str, &Qos, 1);
+  subscribeMOPS((char**)&str, &Qos, cbFun);
 }
 
 /*

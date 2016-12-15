@@ -63,6 +63,7 @@ void Mops_Broker::updateHook(){
 }
 
 void Mops_Broker::stopHook() {
+  StopMOPSBroker();
   if(_verbose)
     std::cout << "Mops_Broker executes stopping !" <<std::endl;
 }

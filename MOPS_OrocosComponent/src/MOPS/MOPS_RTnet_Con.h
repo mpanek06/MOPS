@@ -17,6 +17,7 @@
 
 #include "MOPS.h"
 #include <pthread.h>
+#include "MOPS_RTnet_Con_Linux.h"
 
 
 //**** MOPS - MOPS communication protocol ****
@@ -51,25 +52,8 @@ uint16_t buildNewTopicMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topics, 
 uint16_t buildEmptyMessage(uint8_t *Buffer, int BufferLen);
 //********************************************
 
-
-
 void connectToRTnet();
 int receiveFromRTnet(uint8_t *buf, int buflen);
 void sendToRTnet(uint8_t *buf, int buflen);
-
-#if TARGET_DEVICE == Linux
-pthread_t startNewThread(void *(*start_routine) (void *), void *arg);
-uint8_t mutex_init(pthread_mutex_t *lock);
-void lock_mutex(pthread_mutex_t *lock);
-void unlock_mutex(pthread_mutex_t *lock);
-#endif //TARGET_DEVICE == Linux
-
-
-#if TARGET_DEVICE == RTnode
-void startNewThread(void *(*start_routine) (void *), void *arg);
-uint8_t mutex_init(SemaphoreHandle_t *lock);
-void lock_mutex(SemaphoreHandle_t *lock);
-void unlock_mutex(SemaphoreHandle_t *lock);
-#endif //TARGET_DEVICE == RTnode
 
 #endif /* MOPS_RTNET_CON_H_ */

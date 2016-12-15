@@ -27,6 +27,7 @@ class Mops_Snd : public RTT::TaskContext{
     unsigned _cpu;
     unsigned _timeout;   // [ms]
     std::string _topicName;
+    PublishHandler pub;
     RTT::InputPort<MyData>  _inPort;
 };
 #endif

@@ -43,6 +43,8 @@ bool Mops_Snd::configureHook(){
   }
   
   connectToMOPS();
+  pub = advertiseMOPS((char*)_topicName.c_str());
+  
   if(_verbose)
     std::cout << "Mops_Snd configured !" <<std::endl;
   return true;
@@ -59,7 +61,7 @@ void Mops_Snd::updateHook(){
 
   if( _inPort.read(msg)==RTT::NewData && _topicName.compare(defTopicName) )
   {
-    publishMOPS((char*)_topicName.c_str(), (char*)msg.data);
+    pub.publish((char*)msg.data, &pub);
     getActivity()->trigger();
     if(_verbose)
       std::cout << "Mops_Snd executes updateHook !" <<std::endl;

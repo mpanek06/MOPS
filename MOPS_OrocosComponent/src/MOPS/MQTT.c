@@ -15,15 +15,7 @@
 #include "MQTTConf.h"
 
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
-
-
-#if TARGET_DEVICE == RTnode
-#include <strings.h>
-#include <timers.h>
-#endif //TARGET_DEVICE == RTnode
-
 
 /**
  * @brief Initialization for fixed header of MQTT frame part.
@@ -262,10 +254,8 @@ uint16_t BuildClientPublishMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topi
 	Init_TopicName(&PVHeader.PName, Topic);
 
 
-	if (QOS > 0)//Full fill packet identifiers
-#if TARGET_DEVICE == Linux
-		srand ( time(NULL) );
-#endif //TARGET_DEVICE == Linux
+	if (QOS > 0)//Fullfill packet identifiers
+	startRandomGenrator();
 		*packetID = (uint16_t) (rand() % 65535);
 
 	u16ToMSBandLSB(*packetID, &MSB_temp, &LSB_temp);
@@ -303,6 +293,49 @@ uint16_t BuildClientPublishMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topi
 
 	return (uint16_t) index;
 }
+
+/**
+ * @brief Preparing "Advertise Packet". This is not part of MQTT itself.
+ * @param[out] Buffer Buffer into which built message will be written.
+ * @param[in] BufferLen Maximum length of given buffer.
+ * @param[in] Topic String containing topic name
+ * @return Length of applied bytes into given buffer.
+ */
+uint16_t BuildClientAdvertiseMessage(uint8_t *Buffer, int BufferLen, uint8_t* Topic){
+	FixedHeader FHeader;
+	PublishVariableHeader PVHeader;
+	uint8_t MSB_temp, LSB_temp, Flags = 0;
+	int tempLen = 0, index = 0;
+
+	//Check if all data can be stored in Message buffer
+	tempLen += sizeof(FHeader) + 2 + strlen((char*)Topic) + 2;
+	if (tempLen > BufferLen)
+		return 0;
+	tempLen = 0;
+	//**************************************************
+
+	Init_FixedHeader(&FHeader, ADVERTISE, Flags);
+	Init_TopicName(&PVHeader.PName, Topic);
+
+	PVHeader.MSB_PacketIdentifier = 0;
+	PVHeader.LSB_PacketIdentifier = 0;
+
+	index = sizeof(FHeader);
+	tempLen = (PVHeader.PName.MSB_Length<<8) + PVHeader.PName.LSB_Length;
+	Buffer[ index ] = PVHeader.PName.MSB_Length;
+	Buffer[index+1] = PVHeader.PName.LSB_Length;
+	index+=2;
+	memcpy(Buffer + index, PVHeader.PName.Topic, tempLen);
+	index += tempLen;
+
+	u16ToMSBandLSB(index-sizeof(FixedHeader), &MSB_temp, &LSB_temp);
+	FHeader.RemainingLengthMSB = MSB_temp;
+	FHeader.RemainingLengthLSB = LSB_temp;
+	memcpy(Buffer, &FHeader, sizeof(FHeader));
+
+	return (uint16_t) index;
+}
+
 
 /**
  * @brief Preparing "Publish Acknowledgment message" of MQTT protocol.
@@ -366,9 +399,7 @@ uint16_t BuildSubscribeMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topic, 
 
 	Init_FixedHeader(&FHeader, SUBSCRIBE, 0);
 
-#if TARGET_DEVICE == Linux
-	srand ( time(NULL) );
-#endif //TARGET_DEVICE == Linux
+	startRandomGenrator();
 	*packetID = (uint16_t) (rand() % 65535);
 
 	//Check if all data can be stored in Message buffer
@@ -409,7 +440,6 @@ uint16_t BuildSubscribeMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topic, 
 
 	return (uint16_t) index;
 }
-
 
 /**
  * @brief Preparing "Subscribe Acknowledgment message" of MQTT protocol.
@@ -477,9 +507,7 @@ uint16_t BuildUnSubscribeMessage(uint8_t *Buffer, int BufferLen, uint8_t **Topic
 
 	Init_FixedHeader(&FHeader, UNSUBSCRIBE, 0);
 
-#if TARGET_DEVICE == Linux
-	srand ( time(NULL) );
-#endif //TARGET_DEVICE == Linux
+	startRandomGenrator();
 	*packetID = (uint16_t) (rand() % 65535);
 
 	//Check if all data can be stored in Message buffer
