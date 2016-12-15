@@ -1,3 +1,9 @@
+/**
+ * @file list.c
+ * @author  Marcin Panek
+ * @brief   File containing implemantation of simple linked list used in test framework.
+ */
+
 #include <stdbool.h>
 
 /**
@@ -16,8 +22,9 @@ typedef struct node
 /**
  * @brief Adds element to linked list.
  *
- * @param[in] packetData First field of node.
- * @param[in] timestamp Second field of node.
+ * @param[in] _head First field of node.
+ * @param[in] packetData Node data field.
+ * @param[in] timestamp Time of arrival of packetData.
  */
 void insertFirst(listNode **_head, int packetData, long long timestamp) 
 {
@@ -43,10 +50,10 @@ bool isEmpty(listNode **head)
 }
 
 /**
- * @brief Adds element to linked list.
+ * @brief Finds node with given value.
  *
- * @param[in] packetData First field of node.
- * @param[in] timestamp Second field of node.
+ * @param[in] head First node.
+ * @param[in] packetData value to be found.
  */
 listNode* findByValue(listNode **head, int packetData) 
 {
@@ -75,10 +82,10 @@ listNode* findByValue(listNode **head, int packetData)
 }
 
 /**
- * @brief Adds element to linked list.
+ * @brief Removes element with given value from linked list.
  *
- * @param[in] packetData First field of node.
- * @param[in] timestamp Second field of node.
+ * @param[in] head First node.
+ * @param[in] packetData data to be removed.
  */
 listNode* deleteByValue(listNode **head, int packetData)
 {
@@ -117,6 +124,11 @@ listNode* deleteByValue(listNode **head, int packetData)
    return current;
 }
 
+/**
+ * @brief Prints whole list.
+ *
+ * @param[in] head First node.
+ */
 void printList(listNode **head) {
    listNode *ptr = *head;
    printf("\n[ ");

@@ -16,9 +16,10 @@ int main(void)
 
 	PublishHandler pub = advertiseMOPS("testpub");
 	
-	for(;;){
-		usleep(300000);
+	for(;;)
+	{
 		pub.publish("test", &pub);
+		usleep(300000);
 	}
     return 0;
 }
