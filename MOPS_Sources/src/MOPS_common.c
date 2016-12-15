@@ -190,46 +190,9 @@ int readMOPS(char *buf, uint8_t length) {
 }
 
 /**
- * @brief Receive data from MOPS broker (user interface function).
+ * @brief Receives data from MOPS broker (user interface function).
  *
- * @param[out] buf Container for data received from broker.
- * @param[in] length Define number of bytes which can be stored in buffer.
- * @return Number of bytes actually written.
- */
-int readMOPS2(char *buf, uint8_t length) {
-	char temp[MAX_QUEUE_MESSAGE_SIZE+1];
-	char topicName[MAX_TOPIC_LENGTH+1];
-	int t;
-	callBackFun callBack;
-
-	memset(topicName, 0, MAX_TOPIC_LENGTH+1);
-	memset(temp, 0, MAX_QUEUE_MESSAGE_SIZE+1);
-	memset(buf, 0, length);
-
-	if ((t = recvFromMOPS(temp, MAX_QUEUE_MESSAGE_SIZE)) > 0) {
-		t = InterpretFrame2(buf, topicName, temp, t);
-		callBack = getCallBackByTopicName(topicName, (uint16_t)strlen(topicName));
-
-		if(0 == callBack){
-			printf("Callback for topic %s not found!\n", topicName);
-			return 0;
-		}
-
-		callBack(buf);
-
-	} else {
-		if (t < 0)
-			perror("recv");
-		else
-			printf("Server closed connection\n");
-	}
-	return t;
-}
-
-/**
- * @brief Receive data from MOPS broker (user interface function).
- *
- * @return Number of bytes actually written.
+ * @return -1 if no callback was found for one of topics, 0 otherwise.
  */
 int spinMOPS(){
 	char temp[MAX_QUEUE_MESSAGE_SIZE+1];
@@ -250,7 +213,7 @@ int spinMOPS(){
 
 			if(0 == callBack){
 				printf("Callback for topic %s not found!\n", topicName);
-				return 0;
+				return -1;
 			}
 
 			callBack(buf);
@@ -739,7 +702,6 @@ uint8_t AddTopicToList(TopicID list[], uint8_t *topic, uint16_t topicLen,
 		//else add new topic in the first empty place
 		if (list[i].ID == 0 && strlen((char*) list[i].Topic) == 0) {
 			memcpy(list[i].Topic, topic, tempTopicLength);
-			//printf("Dodany: %s \n", list[i].Topic);
 			list[i].ID = id;
 			return 0;
 		}

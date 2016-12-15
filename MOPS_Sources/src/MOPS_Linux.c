@@ -317,32 +317,45 @@ void DeleteProcessFromQueueList(int ClientID, MOPS_Queue *queue) {
 }
 
 // ***************   Tools functions   ******************************//
-void MOPSBrokerTargetInit(){
+void MOPSBrokerTargetInit(void){
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 }
 
+/**
+ * @brief Stops MOPS Broker 
+ * Should be called when stoping brocker - unlinks global message queue.
+ */
 int StopMOPSBroker(void){
 	mq_unlink(QUEUE_NAME);
 	return 0;
 }
 
-uint8_t waitOnTDMASync(){
+/**
+ * @brief Waits for TDMA sync signal - overlaps rt_dev_ioctl for Linux
+ *
+ */
+uint8_t waitOnTDMASync(void){
 	if(0 == rt_dev_ioctl(TDMA_Dev, RTMAC_RTIOC_WAITONCYCLE, (void*) TDMA_WAIT_ON_SYNC)){
 		return 1;
 	}
 	return 0;
 }
 
+/**
+ * @brief Initializes RTnet connection
+ * Makes some target dependent initialisation - it this case opens TDMA0 device.
+ * return descriptor returned by rt_dev_open function
+ */
 uint8_t RTnetConnTargetDependentInit(void){
 	TDMA_Dev = rt_dev_open("TDMA0", O_RDWR);
 	
-	if(TDMA_Dev>0){
-		return 1;
-	}
-
-	return 0;
+	return TDMA_Dev;
 }
 
+/**
+ * @brief Starts random number generator 
+ * Starts random number generator and initializes it with microseconds part of surrent time.
+ */
 void startRandomGenrator(void){
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
