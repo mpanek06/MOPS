@@ -63,6 +63,13 @@ void sigHandler(int sig, siginfo_t *si, void *unused);
 void *SubFun();
 
 /**
+ * @brief Callback function called when test message is received
+ * Saves data and time of packet arrival.
+ * @param[in] msg incoming data
+ */
+void clbFun(void* msg);
+
+/**
  * @brief Publish function
  * Function publishng data - running in a separate thread.
  * Sends data in a fixed formar - eight digits and saves.
@@ -80,6 +87,22 @@ int main(int argc, char **argv)
 		{
 			verbose = 1;
 			printf("verbose mode on!\n");
+		}
+
+		else if(argv[1][0] == '-' && argv[1][1] == 'h')
+		
+		{
+			printf("Simple test framework for MOPS protocole\n");
+			printf("\n");
+			printf("\n");
+			printf("Usage:  ./TestFramework.out -v no_of_data_to_sent interval\n");
+			printf("\n");
+			printf("-v                   verbose mode\n");
+			printf("no_of_data_to_sent   number of packets to be sent\n");
+			printf("interval             interval between packets\n");
+			printf("\n");
+			printf("Example  ./TestFramework.out -v 200 5000\n");
+			return 0;
 		}
 	}
 
@@ -158,7 +181,6 @@ void printStats()
 		}
       	else
       	{
-      		// nie ma takiego w odbernaych wiec zgubiona paczka
       		++noOfCorruptedData;
       		deleteByValue(&sent, tmpPacketData);
       	}
@@ -188,12 +210,8 @@ void sigHandler(int sig, siginfo_t *si, void *unused)
 
 void *SubFun()
 {
-    char receivedData[100];
-    int receivedDataInt = 0;
-	long recTime = 0;
-
 	connectToMOPS();
-	subscribeOnceMOPS("node_pub", 0);
+	subscribeMOPS("node_pub", 0, clbFun);
 
 	for(;;)
 	{
@@ -201,10 +219,7 @@ void *SubFun()
 			break;
 		else
 		{
-			readMOPS(receivedData, 100);
-			recTime = getCurrentTimeMs();
-			receivedDataInt = atoi(receivedData);
-			insertFirst(&received, receivedDataInt, recTime);
+			spinMOPS();
 		}
 	}
 	return 0;
@@ -242,4 +257,14 @@ void *PubFun()
 
 	}
 	return 0;
+}
+
+void clbFun(void* msg)
+{
+	int receivedDataInt = 0;
+	long recTime = 0;
+
+	recTime = getCurrentTimeMs();
+	receivedDataInt = atoi((char*)msg);
+	insertFirst(&received, receivedDataInt, recTime);
 }

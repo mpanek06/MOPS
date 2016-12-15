@@ -34,9 +34,9 @@ int main(void)
 		return -1;
 	}
 
-	subscribeMOPS2("node_sub", 0, clback1);
-	subscribeMOPS2("testpub",  0, clback2);
-	subscribeMOPS2("node_pub", 0, clback3);
+	subscribeMOPS("node_sub", 0, clback1);
+	subscribeMOPS("testpub",  0, clback2);
+	subscribeMOPS("node_pub", 0, clback3);
 	
 	spinMOPS();
 	
